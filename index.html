@@ -120,6 +120,7 @@
 </style>
 <link rel="stylesheet" href="studio-palette.css">
 <link rel="stylesheet" href="studio-home.css">
+<script src="voice-config.js"></script>
 </head>
 <body>
 
@@ -225,7 +226,8 @@
   <section class="alt" aria-labelledby="conversation-title"><div class="wrap">
     <span class="eyebrow">Talk with Mama</span>
     <h2 id="conversation-title">A conversation with Mama</h2>
-    <p>Mama is ready to listen. Tap the <strong>Talk with Mama</strong> button at the bottom of your screen, allow your microphone, and tell her what's on your heart.</p>
+    <p class="voice-only">Mama is ready to listen. Tap the <strong>Talk with Mama</strong> button at the bottom of your screen, allow your microphone, and tell her what's on your heart.</p>
+    <p class="voice-soon">Mama's voice is coming soon, baby. For now, make a card and let your words do the talking.</p>
   </div></section>
 </main>
 
@@ -240,8 +242,5 @@
   <!-- ElevenLabs Grants badge and link go here once the grant is approved -->
 </footer>
 
-<!-- Talk with Mama: ElevenLabs voice agent -->
-<elevenlabs-convai agent-id="agent_5601m50qpec0exstzb42a0cqp2yp"></elevenlabs-convai>
-<script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
 </body>
 </html>

@@ -4,6 +4,7 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Create a Card | Mama Said</title>
 <link rel="stylesheet" href="studio-palette.css"><link rel="stylesheet" href="designer.css"><script src="designer.js?v=pictures9" defer></script>
+<script src="voice-config.js"></script>
 </head>
 <body>
 <a class="skip-link" href="#card-controls">Skip to card controls</a>
@@ -137,13 +138,11 @@
 <template id="finished-card-template">
   <section class="finished-card" aria-labelledby="finished-card-heading">
     <h2 id="finished-card-heading" tabindex="-1">Your Finished Card</h2>
-    <div class="finished-card-actions"><button id="hear-mama" type="button" class="voice-button">▶ Hear Mama Say It</button><button id="download-voice" type="button">Save Mama's Voice</button><button id="download-finished-card" type="button" class="download-button">Download My Card</button><button id="toggle-mama-finished" type="button">Remove Mama</button><button id="edit-finished-card" type="button">Edit My Card</button><button id="restart-finished-card" type="button">Start Over</button></div>
+    <div class="finished-card-actions"><button id="hear-mama" type="button" class="voice-button voice-only">▶ Hear Mama Say It</button><button id="download-voice" type="button" class="voice-only">Save Mama's Voice</button><button id="download-finished-card" type="button" class="download-button">Download My Card</button><button id="toggle-mama-finished" type="button">Remove Mama</button><button id="edit-finished-card" type="button">Edit My Card</button><button id="restart-finished-card" type="button">Start Over</button></div>
     <p id="voice-status" class="finished-card-notice" role="status" aria-live="polite"></p>
     <p id="download-status" class="finished-card-notice" role="status" aria-live="polite"></p>
-    <p class="finished-card-notice">Hear Mama Say It reads your card out loud. Save Mama's Voice keeps it as a sound file, and Download My Card saves the picture. Send both by text or email.</p>
+    <p class="finished-card-notice voice-soon">Mama's voice is coming soon. For now, tap Download My Card to save your card as a picture you can text, email, or print.</p>
+    <p class="finished-card-notice voice-only">Hear Mama Say It reads your card out loud. Save Mama's Voice keeps it as a sound file, and Download My Card saves the picture. Send both by text or email.</p>
   </section>
 </template>
-<!-- Talk with Mama: ElevenLabs voice agent -->
-<elevenlabs-convai agent-id="agent_5601m50qpec0exstzb42a0cqp2yp"></elevenlabs-convai>
-<script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
 </body></html>
