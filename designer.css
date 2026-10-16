@@ -104,3 +104,12 @@ body.card-full-view{display:block;height:auto;overflow:auto;padding-bottom:0}.ca
 .quick-text{display:flex;flex-direction:column;line-height:1.25}
 .quick-text small{font-size:var(--ui-secondary);color:var(--muted);font-weight:500}
 .quick-text strong{color:var(--ocean)}
+
+/* Card Pictures gallery */
+.card-pictures{border-top:1px solid var(--line);padding-top:8px;margin-top:12px}
+.card-pictures h3{margin:0 0 4px}
+.card-pictures p{font-size:var(--ui-secondary);color:var(--muted)}
+.card-picture-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.card-picture{display:flex;flex-direction:column;gap:4px;padding:4px;font-weight:500;font-size:var(--ui-secondary)}
+.card-picture img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:6px;display:block}
+#card-picture-status:empty{display:none}

@@ -391,6 +391,43 @@ document.documentElement.classList.add('js');
     } finally { URL.revokeObjectURL(url); event.target.value = ''; }
   });
 
+  // Mama Said picture library (assets/cards). A chosen picture is stored like a personal photo.
+  const cardPictures = [
+    {file:'family-smiles', name:'Family smiles', description:'A smiling father with his two daughters'},
+    {file:'sunset-family', name:'Sunset family', description:'A family sitting together by the water at sunset'},
+    {file:'candlelight-couple', name:'Candlelight couple', description:'A couple smiling at each other by candlelight'},
+    {file:'candlelit-table', name:'Candlelit table', description:'A dinner table set with candles and greenery'},
+    {file:'cookout', name:'Cookout', description:'Barbecue ribs with potatoes and fries at a cookout'}
+  ];
+  cardPictures.forEach(picture => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'card-picture';
+    button.setAttribute('aria-label', `Use the ${picture.name} picture`);
+    const thumb = document.createElement('img');
+    thumb.src = `assets/cards/${picture.file}.jpg`; thumb.alt = ''; thumb.loading = 'lazy';
+    const label = document.createElement('span'); label.textContent = picture.name;
+    button.append(thumb, label);
+    button.addEventListener('click', async () => {
+      const version = ++uploadVersion;
+      $('card-picture-status').textContent = 'Putting the picture on your card…';
+      try {
+        const response = await fetch(`assets/cards/${picture.file}.jpg`);
+        if (!response.ok) throw Error('missing');
+        const blob = await response.blob();
+        if (version !== uploadVersion) return;
+        draft.image = new Blob([blob], {type:'image/jpeg'});
+        draft.imageName = picture.name;
+        draft.imageDescription = picture.description;
+        $('image-description').value = picture.description;
+        if (draft.mama) { draft.mama = false; $('show-mama').checked = false; finishedCard.querySelector('#toggle-mama-finished').textContent = 'Put Mama on Card'; }
+        renderImage(); save();
+        $('card-picture-status').textContent = `${picture.name} is on your card. Mama stepped aside; turn her back on above if you like.`;
+      } catch { $('card-picture-status').textContent = 'That picture could not load. Please try again.'; }
+    });
+    $('card-picture-list').append(button);
+  });
+
   $('remove-image').addEventListener('click', () => {
     uploadVersion++;
     uploading = false;

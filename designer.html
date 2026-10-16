@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Create a Card | Mama Said</title>
-<link rel="stylesheet" href="studio-palette.css"><link rel="stylesheet" href="designer.css"><script src="designer.js?v=quick1" defer></script>
+<link rel="stylesheet" href="studio-palette.css"><link rel="stylesheet" href="designer.css"><script src="designer.js?v=pictures1" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#card-controls">Skip to card controls</a>
@@ -56,7 +56,8 @@
           <label><input type="radio" name="artwork" value="lotus"><span class="artwork-thumbnail" aria-hidden="true"></span>Lotus on water</label>
           <label><input type="radio" name="artwork" value="none"><span class="paper-thumbnail" aria-hidden="true"></span>Plain paper</label>
         </fieldset>
-        <label for="card-image">Add or replace a personal image</label>
+        <div class="card-pictures"><h3>Card Pictures</h3><p>Tap a picture to put it on your card.</p><div id="card-picture-list" class="card-picture-list"></div><p id="card-picture-status" role="status" aria-live="polite"></p></div>
+        <label for="card-image">Or add your own photo</label>
         <p id="image-guidance">JPEG, PNG, WebP, or GIF. Up to 10 MB; stored in this browser only.</p>
         <input id="card-image" type="file" accept="image/jpeg,image/png,image/webp,image/gif" aria-describedby="image-guidance image-status">
         <p id="image-status" role="status" aria-live="polite">No image selected.</p>
