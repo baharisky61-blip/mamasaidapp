@@ -405,6 +405,7 @@ document.documentElement.classList.add('js');
     {file:'peaceful-beach', name:'Peaceful beach', description:'Calm turquoise waves on a quiet sandy beach'},
     {file:'sistas-laughing', name:'Sistas laughing', description:'Two women hugging and laughing together'},
     {file:'morning-park', name:'Morning park', description:'A mother and child by the water at sunrise'},
+    {file:'golden-afro-combs', name:'Golden afro combs', description:'Three golden afro combs under a starry night sky'},
     {file:'golden-bloom', name:'Golden bloom', description:'A glowing golden flower of light'},
     {file:'jeweled-mandala', name:'Jeweled mandala', description:'A jeweled blue and gold mandala'},
     {file:'starry-night', name:'Starry night', description:'A starry night sky with a crescent moon'},
