@@ -1,0 +1,20 @@
+:root{--cream:var(--pearl);--paper:var(--shell);--plum:var(--ocean);--plum-soft:var(--ocean);--gold:var(--champagne);--gold-soft:var(--shell);--rose:var(--metallic-gold);--rosewood:var(--metallic-gold)}
+body{background:var(--deep-ocean) url('assets/lotus-water.png') center/cover fixed no-repeat}
+header{background:#fffcf5f0;border-bottom:1px solid var(--champagne)}
+.logo{font-style:italic;color:var(--metallic-gold)}
+.hero{background:linear-gradient(90deg,#fffcf5f2 15%,#fffcf5b8 50%,#fffcf500 85%);padding-top:60px}
+.hero .wrap{grid-template-columns:1.05fr 1fr;gap:28px}
+.halo{width:480px;max-width:100%;flex-shrink:0;box-shadow:0 24px 60px #072f4338}
+.btn,.nav-cta{border:1px solid var(--ocean)}
+.card-demo{box-shadow:0 18px 42px #072f4330}
+.price{background:var(--pearl);border-color:var(--champagne)}
+.price.best{box-shadow:0 14px 30px #93601f20}
+:focus-visible{outline-color:var(--turquoise)}
+
+@media(max-width:820px){.hero .wrap{grid-template-columns:1fr}.halo{width:min(420px,88vw)}}
+
+/* Lotus shows behind every section; panels keep text easy to read. */
+main>section:not(.hero){background:#fffcf5e6}
+main>section.alt{background:#f5efe4eb}
+footer{background:#fffcf5f0}
+@media(max-width:820px){body{background-attachment:scroll}.hero{background:#fffcf5d9}}
