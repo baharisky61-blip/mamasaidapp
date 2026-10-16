@@ -402,7 +402,27 @@ document.documentElement.classList.add('js');
     {file:'three-generations', name:'Three generations', description:'A great-grandmother, grandmother, and granddaughter smiling together'},
     {file:'comfort-embrace', name:'Comfort', description:'A couple holding each other close in an autumn forest'},
     {file:'white-lilies', name:'White lilies', description:'Soft white lilies in gentle light'},
-    {file:'peaceful-beach', name:'Peaceful beach', description:'Calm turquoise waves on a quiet sandy beach'}
+    {file:'peaceful-beach', name:'Peaceful beach', description:'Calm turquoise waves on a quiet sandy beach'},
+    {file:'sistas-laughing', name:'Sistas laughing', description:'Two women hugging and laughing together'},
+    {file:'morning-park', name:'Morning park', description:'A mother and child by the water at sunrise'},
+    {file:'golden-bloom', name:'Golden bloom', description:'A glowing golden flower of light'},
+    {file:'jeweled-mandala', name:'Jeweled mandala', description:'A jeweled blue and gold mandala'},
+    {file:'starry-night', name:'Starry night', description:'A starry night sky with a crescent moon'},
+    {file:'football-field', name:'Football field', description:'A football field under stadium lights'},
+    {file:'stadium-lights', name:'Stadium lights', description:'A football stadium glowing at night'},
+    {file:'baseball-diamond', name:'Baseball diamond', description:'A sunny baseball diamond surrounded by trees'},
+    {file:'ballpark-grass', name:'Ballpark', description:'Fresh ballpark grass and the baseline on a sunny day'},
+    {file:'basketball-sunset', name:'Basketball sunset', description:'A basketball hoop glowing at sunset'},
+    {file:'neighborhood-court', name:'Neighborhood court', description:'A neighborhood basketball court in golden light'},
+    {file:'star-gold', name:'Gold star', description:'A glowing gold star burst'},
+    {file:'star-silver', name:'Silver star', description:'A glowing silver star burst'},
+    {file:'star-pink', name:'Pink star', description:'A glowing pink star burst'},
+    {file:'star-soft-pink', name:'Soft pink star', description:'A soft light pink star burst'},
+    {file:'star-red', name:'Red star', description:'A glowing red star burst'},
+    {file:'star-purple', name:'Purple star', description:'A glowing purple star burst'},
+    {file:'star-blue', name:'Blue star', description:'A glowing blue star burst'},
+    {file:'star-sky-blue', name:'Sky blue star', description:'A soft light blue star burst'},
+    {file:'star-green', name:'Green star', description:'A glowing green star burst'}
   ];
   cardPictures.forEach(picture => {
     const button = document.createElement('button');
