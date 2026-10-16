@@ -1,0 +1,90 @@
+/* Single responsive workspace; preview text is never scaled. */
+:root{--ui-scale:1;--ui-body:calc(18px * var(--ui-scale));--ui-secondary:calc(16px * var(--ui-scale));--ui-action:calc(17px * var(--ui-scale));--ui-heading:calc(22px * var(--ui-scale));--ui-target:calc(44px * var(--ui-scale));--ivory:#FFF7F1;--blush:#F3D1D4;--rosewood:#C76D74;--soft-gold:#D4A574;--deep-plum:#5E2E45}
+:root[data-text-size=large]{--ui-scale:1.166667}:root[data-text-size=extra-large]{--ui-scale:1.333333}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;color:var(--ink);font:var(--ui-body)/1.5 system-ui,sans-serif;background:var(--deep-ocean) url('assets/lotus-water.png') center/cover fixed no-repeat}
+body::before{content:'';position:fixed;inset:0;background:linear-gradient(180deg,#fffcf540,#fffcf514 35%,#072f4314);pointer-events:none;z-index:-1}
+a{color:var(--ocean);text-underline-offset:4px}button,input,textarea,select{font:inherit}
+button{min-width:var(--ui-target);min-height:var(--ui-target);padding:8px 12px;border:1px solid var(--metallic-gold);border-radius:10px;color:var(--ocean);background:var(--pearl);font-weight:650;cursor:pointer;line-height:1.35;font-size:var(--ui-action);height:auto;white-space:normal;overflow-wrap:anywhere}button:hover{background:var(--shell)}button:disabled{opacity:.6;cursor:default}:focus-visible{outline:3px solid var(--turquoise);outline-offset:3px}
+.skip-link{position:absolute;left:12px;top:-120px;z-index:20;background:var(--pearl);padding:12px}.skip-link:focus{top:12px}
+.designer-header{display:flex;align-items:center;justify-content:space-between;gap:8px 16px;padding:6px 16px;flex-wrap:wrap;background:#fffcf5f5;border-bottom:1px solid var(--champagne)}
+.brand{font:italic 30px/1.1 Georgia,serif;color:var(--metallic-gold);text-decoration:none;white-space:nowrap}.brand span{display:block;font:10px/1.8 system-ui,sans-serif;letter-spacing:2px;text-transform:uppercase;color:var(--ink)}
+.designer-header nav{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;font-size:var(--ui-action)}.designer-header nav a{display:inline-flex;align-items:center;min-height:var(--ui-target);text-decoration:none}
+.js noscript{display:none}
+main{width:100%;max-width:1920px;margin:auto;padding:8px 16px}h1,h2,h3,legend{font-family:Georgia,serif;color:var(--ocean);line-height:1.22}h1{font-size:var(--ui-heading);margin:0}h2{font-size:var(--ui-heading);margin:0 0 8px}h3{font-size:var(--ui-heading);margin:8px 0}p{margin:8px 0}
+.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+#save-status{font-size:var(--ui-secondary);color:var(--muted);margin:4px 0 8px;overflow-wrap:anywhere}
+.step-navigation{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.step-navigation button{text-align:left;font-size:var(--ui-action);min-height:calc(48px * var(--ui-scale));padding:6px 10px}.step-navigation button span{font-weight:700;margin-right:6px}.step-navigation button[aria-current=step]{background:var(--ocean);color:var(--pearl)}
+#active-step-heading{font-size:var(--ui-heading);margin:0 0 6px}#active-step-description{font-size:var(--ui-secondary);color:var(--muted);margin:0 0 8px}
+.workspace,.editing-workspace,.controls-panel,.preview-panel{min-width:0;min-height:0}.controls-panel{background:#fffcf5fa;border:1px solid var(--champagne);border-radius:12px;padding:10px}
+.controls-scroll-hint{margin:0 0 8px;font-size:var(--ui-secondary);color:var(--muted);border-bottom:1px solid var(--line);padding-bottom:6px}
+fieldset{min-width:0;border:0;margin:0;padding:0}legend{font-size:var(--ui-heading);font-weight:700;margin-bottom:4px}label{display:block;font-size:var(--ui-body);font-weight:650;margin:8px 0 4px}
+input[type=text],input[type=search],select,textarea{width:100%;min-width:0;min-height:var(--ui-target);padding:8px 10px;border:1px solid #879ba5;border-radius:8px;color:var(--ink);background:white;font-size:var(--ui-body)}#card-message{min-height:240px;line-height:1.55;resize:vertical}
+#sayings-button,#sayings-assist-button{background:var(--ocean);color:var(--pearl)}#sayings-button{margin-top:8px}
+.future-dictation,#image-guidance,#image-status,.collection-note,.contrast-status,#text-style-status,.starter-layouts p{font-size:var(--ui-secondary);color:var(--muted);overflow-wrap:anywhere}.contrast-status:empty{display:none}
+.starter-layouts,.reset-area{border-top:1px solid var(--line);padding-top:8px;margin-top:12px}.starter-layouts button{margin:4px 0}
+.colors{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.colors legend,.artwork-options legend{font:650 var(--ui-body)/1.4 system-ui,sans-serif;margin-bottom:6px}
+.colors label{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:4px;margin:0;padding:5px 3px;min-height:60px;border:1px solid var(--line);border-radius:8px;cursor:pointer;font-size:var(--ui-secondary);text-align:center}.swatch-name{width:100%}input[type=radio]{width:20px;height:20px;accent-color:var(--ocean);margin:0;flex-shrink:0}.swatch{width:24px;height:24px;border-radius:50%;border:1px solid #65737a}
+.colors label:has(input:checked),.artwork-options label:has(input:checked){border-color:var(--ocean);box-shadow:inset 0 0 0 1px var(--ocean);background:var(--shell)}
+.ivory{background:var(--ivory)}.blush{background:var(--blush)}.rosewood{background:var(--rosewood)}.gold{background:var(--soft-gold)}.plum{background:var(--deep-plum)}.ocean{background:var(--ocean)}.turquoise{background:var(--turquoise)}.pearl{background:var(--pearl)}.champagne{background:var(--champagne)}
+.artwork-options{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.artwork-options label{display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin:0;padding:6px;border:1px solid var(--line);border-radius:8px;font-size:var(--ui-secondary);cursor:pointer}.artwork-thumbnail,.paper-thumbnail{display:inline-block;width:44px;height:32px;border-radius:4px;background:url('assets/lotus-water.png') center bottom/cover}.paper-thumbnail{background:var(--ivory);border:1px solid var(--line)}
+input[type=file]{width:100%;min-height:var(--ui-target);font-size:var(--ui-secondary)}input[type=file]::file-selector-button{font:inherit;font-size:var(--ui-action);min-height:var(--ui-target);border:1px solid var(--metallic-gold);border-radius:8px;background:var(--shell);color:var(--ocean);padding:8px}
+.typography-controls{margin-top:12px}.typography-controls>legend{font-size:var(--ui-heading)}.text-part-controls{margin:8px 0}.text-part-controls legend{font:650 var(--ui-body)/1.4 system-ui,sans-serif}.short-controls{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:8px}.short-field{min-width:0}.short-field label{margin-top:2px}.short-field select{padding:7px 4px;font-size:var(--ui-action)}.backing-choice{display:flex;align-items:center;gap:5px;min-height:var(--ui-target);margin:25px 0 0;font-size:var(--ui-secondary);line-height:1.25;cursor:pointer}.backing-choice input{width:22px;height:22px;flex-shrink:0;accent-color:var(--ocean)}.alignment-field{max-width:18ch}
+.preview-panel{display:grid;grid-template-rows:auto minmax(0,1fr);gap:6px}.preview-heading-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;background:var(--pearl);padding:6px 12px;border-radius:8px}.preview-heading-row h2{font-size:var(--ui-heading);margin:0}.live-indicator{font-size:var(--ui-secondary)}.preview-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.return-to-controls{display:none;align-items:center;min-height:var(--ui-target);background:var(--pearl);border-radius:8px;padding:6px 10px;font-size:var(--ui-secondary)}.preview-note{display:none}
+.preview-fit-area{min-width:0;min-height:0;padding:6px 12px 16px;scrollbar-gutter:stable;overflow-wrap:anywhere}.card-stage{width:100%;max-width:760px;margin:0 auto;padding:12px;background:#fffaf0c9;border:1px solid var(--champagne);box-shadow:0 12px 30px #072f4352;border-radius:5px}
+.card{position:relative;isolation:isolate;padding:40px 30px 45px;border:1px solid var(--champagne);border-radius:2px;overflow:hidden;overflow-wrap:anywhere;color:#15313f;box-shadow:inset 0 0 45px #9a722a0c}.card>*{position:relative;z-index:1}.card h3{font:36px/1.15 Georgia,serif;margin:24px 0;white-space:pre-wrap;color:inherit;overflow-wrap:anywhere}.card p{white-space:pre-wrap;font-size:20px;line-height:1.7}.card .card-overline{font-size:12px;letter-spacing:3px;font-weight:650}.card-divider{width:90px;height:1px;background:currentColor;opacity:.55;margin:24px 0}
+.card.art-lotus:not(.has-personal-image){padding-bottom:210px}.card.art-lotus:not(.has-personal-image)::after{content:'';position:absolute;inset:auto 0 0;height:180px;z-index:0;background:url('assets/lotus-water.png') center bottom/cover no-repeat;border-top:1px solid var(--champagne)}.card.rosewood,.card.rosewood h3{color:#24131c}.card.plum,.card.ocean,.card.turquoise{color:var(--pearl)}.signature{display:block;font-size:13px;margin-top:36px;letter-spacing:.6px}#preview-image{display:block;width:auto;height:auto;max-width:100%;max-height:360px;object-fit:contain;margin:24px auto;border-radius:5px}
+.has-text-backing{display:inline;padding:.12em .28em;border-radius:.3em;box-decoration-break:clone;-webkit-box-decoration-break:clone;box-shadow:0 1px 5px #072f4310}.card h3:has(.has-text-backing){line-height:1.5}
+.assistance-panel{display:grid;gap:10px;margin-top:12px;border-top:1px solid var(--line);padding-top:10px}.assistance-box,#mama-help,#mama-sayings{padding:8px 0;min-width:0}.assistance-box h2{font-size:var(--ui-heading)}.assistance-box p{font-size:var(--ui-secondary)}.help-heading{display:flex;align-items:center;flex-wrap:wrap;gap:8px;justify-content:space-between}.help-heading h2{margin:0}.help-portrait{width:96px;height:96px;object-fit:contain;border:2px solid var(--champagne);border-radius:10px;margin:10px 0}summary{min-height:var(--ui-target);padding:8px 0;cursor:pointer;font-weight:650}.inspiration-options{display:grid;gap:6px}.inspiration-options button{display:flex;justify-content:space-between;text-align:left;font-weight:500}.inspiration-options span{margin-left:6px}.voice-note{border-top:1px solid var(--line);padding-top:8px}#sayings-results{list-style:none;padding:0}#sayings-results li{padding:10px 0;border-bottom:1px solid var(--line)}.saying-text{white-space:pre-wrap;overflow-wrap:anywhere}.saying-number,.spelling-note{font-size:var(--ui-secondary);color:var(--muted)}
+.step-actions{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:0}.step-actions p{background:var(--pearl);border-radius:6px;padding:2px 8px}.step-actions p{margin:0;font-size:var(--ui-secondary)}.storage-note{margin:4px 0;font-size:var(--ui-secondary);color:var(--muted)}.draft-information{margin-top:10px;border-top:1px solid var(--line)}
+@media(min-width:900px){body{height:100dvh;display:grid;grid-template-rows:auto minmax(0,1fr);overflow:hidden}main{height:100%;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:6px}.step-navigation{grid-row:1}.workspace{grid-row:2}.step-actions{grid-row:3}.workspace,.editing-workspace{height:100%}.editing-workspace{display:grid;grid-template-columns:340px minmax(0,1fr);gap:14px}.controls-panel{overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-gutter:stable}.preview-fit-area{overflow-y:auto;overscroll-behavior:contain}.controls-panel::-webkit-scrollbar{width:12px}.controls-panel::-webkit-scrollbar-track{background:var(--shell)}.controls-panel::-webkit-scrollbar-thumb{background:var(--turquoise);border:3px solid var(--shell);border-radius:8px}}
+@media(max-width:899px){body{padding-bottom:76px}.designer-header{flex-wrap:wrap;padding:10px 14px;gap:4px}.designer-header nav{gap:8px 12px;flex-wrap:wrap;font-size:var(--ui-action)}main{padding:10px 12px}.step-navigation,.workspace,.step-actions{margin-bottom:10px}.step-navigation{grid-template-columns:1fr 1fr}.step-navigation button{font-size:var(--ui-action)}.controls-panel{overflow:visible}.editing-workspace{display:grid;gap:14px}.preview-fit-area{padding:6px 0 16px}.preview-panel{display:block}.preview-actions{margin:6px 0}.card-stage{padding:8px}.card{padding:26px 20px}#view-card-button{position:fixed;left:14px;bottom:14px;z-index:12;background:var(--ocean);color:var(--pearl);border-color:var(--champagne);box-shadow:0 3px 15px #072f4350}.step-actions{flex-wrap:wrap}.step-actions p{display:none}.step-actions button{font-size:var(--ui-action);flex:1}.controls-scroll-hint{display:none}}
+/* Full-size viewing reuses the live card and restores editing focus/scroll. */
+body.card-full-view{display:block;height:auto;overflow:auto;padding-bottom:0}.card-full-view .designer-header,.card-full-view .studio-introduction,.card-full-view #save-status,.card-full-view .step-navigation,.card-full-view #active-step-heading,.card-full-view #active-step-description,.card-full-view .controls-panel,.card-full-view .step-actions,.card-full-view .storage-note,.card-full-view .return-to-controls,.card-full-view #view-card-button,.card-full-view .skip-link{display:none!important}.card-full-view main,.card-full-view .editing-workspace,.card-full-view .preview-panel{display:block;height:auto}.card-full-view main{max-width:820px;padding:10px 12px}.card-full-view .preview-fit-area{overflow:visible}.card-full-view .preview-heading-row{position:sticky;top:0;z-index:2}.card-full-view .preview-actions{position:static;z-index:3;background:var(--pearl);padding:6px;border-radius:8px}
+@font-face{font-family:'Mama Lora';src:url('assets/fonts/lora/regular.ttf') format('truetype');font-weight:400 700;font-style:normal;font-display:swap}
+@font-face{font-family:'Mama Bree';src:url('assets/fonts/breeserif/regular.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Mama Atkinson';src:url('assets/fonts/atkinsonhyperlegible/regular.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Mama Mono';src:url('assets/fonts/robotomono/regular.ttf') format('truetype');font-weight:100 700;font-style:normal;font-display:swap}
+@font-face{font-family:'Mama Lato';src:url('assets/fonts/lato/regular.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+
+
+.interface-size{display:flex;align-items:center;flex-wrap:wrap;gap:8px;max-width:100%;min-width:0}
+.interface-size label{font-size:var(--ui-action);margin:0}
+.interface-size select{width:auto;max-width:100%;font-size:var(--ui-action);padding:6px 8px}
+#interface-size-status{font-size:var(--ui-secondary);max-width:30ch;overflow-wrap:anywhere}#interface-size-status:empty{display:none}
+/* Larger interface text can reflow controls without affecting card typography. */
+:root:not([data-text-size=normal])[data-text-size] .short-controls{grid-template-columns:1fr}
+:root:not([data-text-size=normal])[data-text-size] .backing-choice{margin:0}
+:root:not([data-text-size=normal])[data-text-size] .colors{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-height:550px) and (min-width:900px){body{height:auto;min-height:100dvh;overflow:auto}main{height:auto}.workspace{height:65dvh;min-height:320px}}
+
+/* Step 4 mounts only this finished-card content and the existing live card. */
+.finished-card{height:100%;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;gap:8px}
+.finished-card>h2{justify-self:center;background:var(--pearl);border-radius:8px;padding:6px 12px;margin:0}
+.finished-card-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.finished-card-notice{justify-self:center;max-width:65ch;margin:0;padding:3px 8px;background:var(--pearl);border-radius:6px;font-size:var(--ui-secondary);text-align:center}
+@media(min-width:900px){main[data-finished=true]{grid-template-rows:auto minmax(0,1fr)}}
+@media(max-width:899px){.finished-card{height:auto;display:flex;flex-direction:column}.finished-card .preview-fit-area{width:100%}}
+
+/* Download button stands out on the finished card. */
+.download-button{background:var(--ocean);color:var(--pearl)}.download-button:hover{background:var(--deep-ocean)}#download-status:empty{display:none}
+
+/* Mama's portrait on the card, like the design picture. Text wraps beside her. */
+.card-mama{display:none}
+.card.show-mama .card-mama{display:block;float:right;width:38%;max-width:230px;aspect-ratio:1;object-fit:cover;border-radius:50%;margin:0 0 16px 22px;border:3px solid var(--champagne);box-shadow:0 10px 26px #072f4340}
+.card::after{clear:both}
+.signature{clear:both}
+.mama-choice{display:flex;align-items:center;gap:10px;padding:8px;margin:4px 0 12px;border:1px solid var(--line);border-radius:8px;cursor:pointer;font-size:var(--ui-body)}
+.mama-choice input{width:22px;height:22px;accent-color:var(--ocean);flex-shrink:0}
+.mama-choice img{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid var(--champagne)}
+.mama-choice:has(input:checked){border-color:var(--ocean);background:var(--shell)}
+@media(max-width:899px){.card.show-mama .card-mama{width:42%}}
+
+/* Inspiration offers Mama's words to add. */
+.inspiration-options button[aria-pressed=true]{background:var(--ocean);color:var(--pearl)}
+#inspiration-offer{margin-top:8px;padding:10px;border:1px solid var(--champagne);border-radius:10px;background:var(--shell)}
+.inspiration-label{font-weight:700;color:var(--ocean);margin:0 0 4px}
+#inspiration-words{margin:0 0 10px;font:italic var(--ui-body)/1.5 Georgia,serif;color:var(--ink)}
+#add-inspiration{background:var(--ocean);color:var(--pearl);width:100%}
+#inspiration-add-status{font-size:var(--ui-secondary);color:var(--muted)}#inspiration-add-status:empty{display:none}

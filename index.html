@@ -10,15 +10,20 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --cream:#F0EAD6;
-    --paper:#F8F4E8;
-    --plum:#0E7C80;
-    --plum-soft:#2BA6A2;
-    --gold:#D4A23C;
-    --gold-soft:#F1DFB0;
-    --rose:#7FB3AE;
-    --ink:#14302F;
-    --muted:#4F6563;
+    --ivory:#FFF7F1;
+    --blush:#F3D1D4;
+    --rosewood:#C76D74;
+    --soft-gold:#D4A574;
+    --deep-plum:#5E2E45;
+    --cream:var(--ivory);
+    --paper:var(--blush);
+    --plum:var(--deep-plum);
+    --plum-soft:var(--deep-plum);
+    --gold:var(--soft-gold);
+    --gold-soft:var(--blush);
+    --rose:var(--rosewood);
+    --ink:#35212A;
+    --muted:#654650;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
@@ -36,7 +41,7 @@
   header{padding:22px 0}
   header .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px}
   .logo{font-family:'Fraunces',serif;font-weight:700;font-size:28px;color:var(--plum);text-decoration:none;letter-spacing:.3px}
-  .logo span{color:var(--gold)}
+  .logo span{color:var(--plum)}
   .nav-cta{background:var(--plum);color:#fff;text-decoration:none;padding:10px 20px;border-radius:999px;font-weight:700;font-size:16px;white-space:nowrap}
 
   /* Hero */
@@ -46,31 +51,23 @@
   h1{font-family:'Fraunces',serif;font-weight:700;font-size:clamp(38px,6vw,62px);line-height:1.08;color:var(--plum);margin-bottom:20px}
   .greeting{font-family:'Fraunces',serif;font-style:italic;font-size:clamp(22px,3vw,28px);color:var(--plum-soft);margin-bottom:18px}
   .hero p.lead{font-size:20px;color:var(--muted);max-width:520px;margin-bottom:30px}
-  .btn{display:inline-block;background:var(--gold);color:var(--plum);font-weight:700;font-size:19px;padding:16px 30px;border-radius:999px;text-decoration:none;box-shadow:0 6px 0 #B9862C;transition:transform .15s,box-shadow .15s}
-  .btn:hover{transform:translateY(2px);box-shadow:0 4px 0 #B9862C}
+  .btn{display:inline-block;background:var(--plum);color:var(--ivory);font-weight:700;font-size:19px;padding:16px 30px;border-radius:999px;text-decoration:none;box-shadow:0 6px 0 var(--rosewood);transition:transform .15s,box-shadow .15s}
+  .btn:hover{transform:translateY(2px);box-shadow:0 4px 0 var(--rosewood)}
   .btn-note{display:block;margin-top:14px;font-size:15px;color:var(--muted)}
 
   /* Mama portrait */
   .mama{position:relative;display:flex;justify-content:center}
   .halo{
     width:min(380px,80vw);aspect-ratio:1;border-radius:50%;
-    background:radial-gradient(circle at 35% 30%,#F6E7C1,var(--gold) 45%,var(--plum-soft) 100%);
-    box-shadow:0 30px 60px rgba(14,124,128,.25);
+    background:radial-gradient(circle at 35% 30%,var(--ivory),var(--gold) 45%,var(--plum-soft) 100%);
+    box-shadow:0 30px 60px rgba(94,46,69,.25);
     animation:float 6s ease-in-out infinite;
     overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;
   }
   .halo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
   .halo .placeholder{font-family:'Fraunces',serif;color:#fff;font-size:28px;text-align:center;padding:30px;line-height:1.3}
-  .bubble{
-    position:absolute;bottom:4%;left:-6%;z-index:2;
-    background:var(--paper);color:var(--plum);
-    font-family:'Fraunces',serif;font-style:italic;font-size:19px;
-    padding:14px 20px;border-radius:22px 22px 22px 4px;
-    box-shadow:0 10px 24px rgba(14,124,128,.15);max-width:220px;
-    animation:float 6s ease-in-out infinite;animation-delay:-3s;
-  }
   @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
-  @media (prefers-reduced-motion:reduce){.halo,.bubble{animation:none}}
+  @media (prefers-reduced-motion:reduce){.halo{animation:none}}
 
   /* Sections */
   section{padding:70px 0}
@@ -86,7 +83,7 @@
   .step p{color:var(--muted);font-size:17px}
 
   .cards{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
-  .card-demo{background:linear-gradient(160deg,var(--plum),var(--plum-soft));color:#fff;border-radius:26px;padding:40px 34px;box-shadow:0 20px 40px rgba(14,124,128,.25)}
+  .card-demo{background:linear-gradient(160deg,var(--plum),var(--plum-soft));color:#fff;border-radius:26px;padding:40px 34px;box-shadow:0 20px 40px rgba(94,46,69,.25)}
   .card-demo .to{font-size:15px;opacity:.8;margin-bottom:10px}
   .card-demo .msg{font-family:'Fraunces',serif;font-size:26px;line-height:1.35;margin-bottom:24px}
   .play{display:inline-flex;align-items:center;gap:10px;background:var(--gold);color:var(--plum);font-weight:700;padding:10px 18px;border-radius:999px;font-size:16px}
@@ -105,11 +102,6 @@
   .amount small{font-size:18px;font-family:'Nunito',sans-serif;color:var(--muted);font-weight:600}
   .price p{color:var(--muted);font-size:16px}
 
-  /* Signup */
-  .signup{text-align:center;background:var(--plum);color:#fff;border-radius:30px;padding:56px 26px}
-  .signup h2{color:#fff}
-  .signup p{color:#E6F5F3;max-width:560px;margin:0 auto 28px}
-
   /* Footer */
   footer{padding:40px 0 50px;color:var(--muted);font-size:16px}
   footer .wrap{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:flex-start}
@@ -120,17 +112,21 @@
     .hero .wrap,.cards{grid-template-columns:1fr}
     .mama{order:-1}
     .steps,.prices{grid-template-columns:1fr}
-    .bubble{left:0;font-size:17px}
     body{font-size:18px}
   }
+  :focus-visible{outline:3px solid var(--rosewood);outline-offset:5px}
+  @media(max-width:380px){header .wrap{flex-wrap:wrap}.wrap{padding:0 16px}}
+  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 </style>
+<link rel="stylesheet" href="studio-palette.css">
+<link rel="stylesheet" href="studio-home.css">
 </head>
 <body>
 
 <header>
   <div class="wrap">
     <a href="#" class="logo">Mama <span>Said</span></a>
-    <a href="#join" class="nav-cta">Join the waitlist</a>
+    <a href="#how-mama-helps" class="nav-cta">Meet Mama</a>
   </div>
 </header>
 
@@ -142,7 +138,8 @@
         <h1>A grandmother's voice, whenever you need it.</h1>
         <p class="greeting">"What's wrong, baby? Do you need some encouraging words?"</p>
         <p class="lead">Mama Said is a warm AI grandmother who listens, speaks comfort out loud, and helps you send talking cards to the people you love.</p>
-        <a href="#join" class="btn">Get early access</a>
+        <a href="#how-mama-helps" class="btn">How Mama helps</a>
+        <a href="designer.html" class="btn" style="margin-top:16px">Create a Card</a>
         <span class="btn-note">7 days free when we launch. No pressure, baby.</span>
       </div>
       <div class="mama">
@@ -150,12 +147,11 @@
           <img src="mama.jpg" alt="Mama, the Mama Said AI grandmother" onerror="this.remove()">
           <div class="placeholder">Mama is<br>getting ready<br>for you</div>
         </div>
-        <div class="bubble">"Will you accept what I tell you and act on it?"</div>
       </div>
     </div>
   </section>
 
-  <section class="alt">
+  <section class="alt" id="how-mama-helps">
     <div class="wrap">
       <h2>How Mama helps</h2>
       <p class="sub">She doesn't rush you, and she doesn't judge. She listens like family.</p>
@@ -186,7 +182,7 @@
         <div class="msg">"Your brain already knows what you need. First, you have to accept that you need it."</div>
         <span class="play">
           <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 2.5v11l9-5.5z"/></svg>
-          Hear Mama say it
+          Voice preview coming soon
         </span>
       </div>
       <div>
@@ -226,15 +222,11 @@
     </div>
   </section>
 
-  <section id="join">
-    <div class="wrap">
-      <div class="signup">
-        <h2>Be first to meet Mama</h2>
-        <p>Mama Said is getting ready. Send us a quick note and we'll let you know the day she opens her door.</p>
-        <a class="btn" href="mailto:hello@mamasaidapp.com?subject=Add%20me%20to%20the%20Mama%20Said%20waitlist&body=Hi%20Mama%2C%20please%20let%20me%20know%20when%20you%20launch!">Join the waitlist</a>
-      </div>
-    </div>
-  </section>
+  <section class="alt" aria-labelledby="conversation-title"><div class="wrap">
+    <span class="eyebrow">Talk with Mama</span>
+    <h2 id="conversation-title">A conversation with Mama</h2>
+    <p>Mama is ready to listen. Tap the <strong>Talk with Mama</strong> button at the bottom of your screen, allow your microphone, and tell her what's on your heart.</p>
+  </div></section>
 </main>
 
 <footer>
@@ -248,5 +240,8 @@
   <!-- ElevenLabs Grants badge and link go here once the grant is approved -->
 </footer>
 
+<!-- Talk with Mama: ElevenLabs voice agent -->
+<elevenlabs-convai agent-id="agent_5601m50qpec0exstzb42a0cqp2yp"></elevenlabs-convai>
+<script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
 </body>
 </html>
