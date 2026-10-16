@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Create a Card | Mama Said</title>
-<link rel="stylesheet" href="studio-palette.css"><link rel="stylesheet" href="designer.css"><script src="designer.js?v=inspire1" defer></script>
+<link rel="stylesheet" href="studio-palette.css"><link rel="stylesheet" href="designer.css"><script src="designer.js?v=voice1" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#card-controls">Skip to card controls</a>
@@ -135,9 +135,10 @@
 <template id="finished-card-template">
   <section class="finished-card" aria-labelledby="finished-card-heading">
     <h2 id="finished-card-heading" tabindex="-1">Your Finished Card</h2>
-    <div class="finished-card-actions"><button id="download-finished-card" type="button" class="download-button">Download My Card</button><button id="edit-finished-card" type="button">Edit My Card</button><button id="restart-finished-card" type="button">Start Over</button></div>
+    <div class="finished-card-actions"><button id="hear-mama" type="button" class="voice-button">▶ Hear Mama Say It</button><button id="download-voice" type="button">Save Mama's Voice</button><button id="download-finished-card" type="button" class="download-button">Download My Card</button><button id="edit-finished-card" type="button">Edit My Card</button><button id="restart-finished-card" type="button">Start Over</button></div>
+    <p id="voice-status" class="finished-card-notice" role="status" aria-live="polite"></p>
     <p id="download-status" class="finished-card-notice" role="status" aria-live="polite"></p>
-    <p class="finished-card-notice">Download saves your card as a picture you can text, email, or print. Sending from the app is not available yet.</p>
+    <p class="finished-card-notice">Hear Mama Say It reads your card out loud. Save Mama's Voice keeps it as a sound file, and Download My Card saves the picture. Send both by text or email.</p>
   </section>
 </template>
 <!-- Talk with Mama: ElevenLabs voice agent -->

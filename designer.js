@@ -511,6 +511,57 @@ document.documentElement.classList.add('js');
     });
     return pictureLibrary;
   }
+  // Mama reads the card out loud. Audio is kept for the same words so replaying costs nothing extra.
+  const voiceStatus = finishedCard.querySelector('#voice-status');
+  const hearButton = finishedCard.querySelector('#hear-mama');
+  const saveVoiceButton = finishedCard.querySelector('#download-voice');
+  let voiceCache = { text: '', blob: null };
+  let player = null;
+  const cardWords = () => [draft.title.trim(), draft.message.trim()].filter(Boolean).join('. ');
+  async function getMamaVoice() {
+    const text = cardWords();
+    if (!text) throw Error('Write a message first, baby.');
+    if (voiceCache.text === text && voiceCache.blob) return voiceCache.blob;
+    const response = await fetch('/api/speak', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }), signal: AbortSignal.timeout(45000) });
+    if (!response.ok) {
+      let message = "Mama couldn't speak just now. Please try again.";
+      try { message = (await response.json()).message || message; } catch {}
+      throw Error(message);
+    }
+    const blob = await response.blob();
+    voiceCache = { text, blob };
+    return blob;
+  }
+  hearButton.addEventListener('click', async () => {
+    if (player && !player.paused) { player.pause(); hearButton.textContent = '▶ Hear Mama Say It'; voiceStatus.textContent = ''; return; }
+    hearButton.disabled = true; saveVoiceButton.disabled = true;
+    voiceStatus.textContent = 'Mama is getting ready to speak…';
+    try {
+      const blob = await getMamaVoice();
+      if (player) URL.revokeObjectURL(player.src);
+      player = new Audio(URL.createObjectURL(blob));
+      player.addEventListener('ended', () => { hearButton.textContent = '▶ Hear Mama Say It'; voiceStatus.textContent = ''; });
+      await player.play();
+      hearButton.textContent = '■ Stop';
+      voiceStatus.textContent = 'Mama is reading your card.';
+    } catch (error) { voiceStatus.textContent = error.message; }
+    finally { hearButton.disabled = false; saveVoiceButton.disabled = false; }
+  });
+  saveVoiceButton.addEventListener('click', async () => {
+    hearButton.disabled = true; saveVoiceButton.disabled = true;
+    voiceStatus.textContent = 'Getting Mama’s voice ready to save…';
+    try {
+      const blob = await getMamaVoice();
+      const link = document.createElement('a');
+      const name = (draft.title.trim() || 'mama-said-card').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase() || 'mama-said-card';
+      link.download = `${name}-mama-voice.mp3`;
+      link.href = URL.createObjectURL(blob);
+      document.body.append(link); link.click(); link.remove();
+      setTimeout(() => URL.revokeObjectURL(link.href), 4000);
+      voiceStatus.textContent = 'Mama’s voice was saved. Look in your Downloads folder.';
+    } catch (error) { voiceStatus.textContent = error.message; }
+    finally { hearButton.disabled = false; saveVoiceButton.disabled = false; }
+  });
   const downloadButton = finishedCard.querySelector('#download-finished-card');
   const downloadStatus = finishedCard.querySelector('#download-status');
   downloadButton.addEventListener('click', async () => {

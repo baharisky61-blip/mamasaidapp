@@ -88,3 +88,8 @@ body.card-full-view{display:block;height:auto;overflow:auto;padding-bottom:0}.ca
 #inspiration-words{margin:0 0 10px;font:italic var(--ui-body)/1.5 Georgia,serif;color:var(--ink)}
 #add-inspiration{background:var(--ocean);color:var(--pearl);width:100%}
 #inspiration-add-status{font-size:var(--ui-secondary);color:var(--muted)}#inspiration-add-status:empty{display:none}
+
+/* Mama's voice buttons on the finished card. */
+.voice-button{background:var(--metallic-gold);color:var(--pearl);border-color:var(--metallic-gold);font-size:calc(var(--ui-action) * 1.1)}
+.voice-button:hover{background:#7a4f19}
+#voice-status:empty{display:none}
