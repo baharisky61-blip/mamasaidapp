@@ -93,3 +93,14 @@ body.card-full-view{display:block;height:auto;overflow:auto;padding-bottom:0}.ca
 .voice-button{background:var(--metallic-gold);color:var(--pearl);border-color:var(--metallic-gold);font-size:calc(var(--ui-action) * 1.1)}
 .voice-button:hover{background:#7a4f19}
 #voice-status:empty{display:none}
+
+/* Quick Cards: ready-made cards, one tap to finished. */
+.quick-cards{border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:8px}
+.quick-cards h3{margin-top:0}
+.quick-cards p{font-size:var(--ui-secondary);color:var(--muted)}
+.quick-card-list{display:grid;gap:6px;max-height:300px;overflow-y:auto;padding-right:4px}
+.quick-card{display:flex;align-items:center;gap:10px;text-align:left;font-weight:500;padding:8px 10px}
+.quick-swatch{width:34px;height:34px;border-radius:8px;border:1px solid #879ba5;flex-shrink:0}
+.quick-text{display:flex;flex-direction:column;line-height:1.25}
+.quick-text small{font-size:var(--ui-secondary);color:var(--muted);font-weight:500}
+.quick-text strong{color:var(--ocean)}

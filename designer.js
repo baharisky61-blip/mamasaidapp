@@ -115,6 +115,43 @@ document.documentElement.classList.add('js');
     if (step === 4) presentFinishedCard();
   }
 
+  // Ready-made cards in Mama's voice, built from Nelcea's own sayings. No holidays.
+  const quickCards = [
+    {group:'Encouragement', title:"You've Got This, Baby", color:'pearl', artwork:'lotus', message:"Honey, you got all that experience. There's got to be something in there you can do. Your brain already knows what you need. Go on, baby. I believe in you."},
+    {group:'Encouragement', title:'Keep Going', color:'ocean', artwork:'none', message:"We don't fail, we just experience them. Then we look back and decide what to do different. Every day you wake up with new thoughts, so use them."},
+    {group:'Appreciation', title:'I Appreciate You', color:'champagne', artwork:'none', message:"I appreciate you. You good peoples, and I see everything you do. Nobody can be mad at your gratitude, so here's mine."},
+    {group:'Appreciation', title:'Thank You, Sistah', color:'blush', artwork:'none', message:"Thank you for the heart you pour into everything you do. I know that's right! I appreciate you more than you know."},
+    {group:'Proud of You', title:'Let Your Light Shine', color:'gold', artwork:'none', message:"Let your light shine, baby! Look what you were able to do. I'm so proud of you, and I'm so thankful."},
+    {group:'Proud of You', title:'Celebrate You', color:'turquoise', artwork:'none', message:"Let's get it! You did that. Celebrate you today, because you earned it."},
+    {group:'New Beginnings', title:'A Fresh Start', color:'pearl', artwork:'lotus', message:"Every day you wake up with new thoughts, so use them. Piece by piece, you're building something beautiful."},
+    {group:'New Beginnings', title:'Let It Go', color:'ocean', artwork:'none', message:"Let it go, baby. Move on. What's ahead of you is better than what's behind you, and I'll be there cheering you on."},
+    {group:'Family', title:'Grandma Loves You', color:'ivory', artwork:'lotus', message:"Grandma loves you so much, baby. You make my heart so happy. I'll be there for you, always."},
+    {group:'Family', title:'Family Is Everything', color:'champagne', artwork:'none', message:"My brother, my sister, my cousin. Family is everything. I appreciate you, and I'll be there."},
+    {group:'Friendship', title:'You Good Peoples', color:'plum', artwork:'none', message:"Girl, you know you my sistah. You good peoples, and I appreciate you. I'll be there, always."},
+    {group:'Friendship', title:"What's Going On?", color:'turquoise', artwork:'none', message:"What's going on? Talk to me about that. I'm here, and I'll be there."},
+    {group:'Thinking of You', title:'Thinking of You', color:'blush', artwork:'lotus', message:"You were on my mind today, baby. I just wanted you to know somebody loves you."},
+    {group:"You're Not Alone", title:"You're Not Alone", color:'pearl', artwork:'lotus', message:"Loneliness is part of life. But when you're sad, get around people. A walk in the mall, a funny podcast, dancing by yourself breaks the spell. And call me. I'll be there."},
+    {group:'Just Because', title:'Just Because', color:'gold', artwork:'none', message:"No reason. Just because. I appreciate you, baby. Celebrate you."},
+    {group:'Just Because', title:'Stay Humble', color:'ocean', artwork:'none', message:"Stay humble, keep your energy right, and protect your boundaries. You're doing better than you think."}
+  ];
+  quickCards.forEach(card => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'quick-card';
+    const swatch = document.createElement('span'); swatch.className = `quick-swatch ${card.color}`; swatch.setAttribute('aria-hidden','true');
+    const text = document.createElement('span'); text.className = 'quick-text';
+    const group = document.createElement('small'); group.textContent = card.group;
+    const title = document.createElement('strong'); title.textContent = card.title;
+    text.append(group, title); button.append(swatch, text);
+    button.addEventListener('click', () => {
+      if ((draft.title || draft.message) && !confirm('Use this Quick Card? It replaces the title and message you have now. Your photo stays.')) return;
+      draft.title = card.title; draft.message = card.message; draft.color = card.color;
+      if (!draft.image) draft.artwork = card.artwork;
+      populate(); save(); showStep(4);
+    });
+    $('quick-card-list').append(button);
+  });
+
   function showStep(step) {
     if (![1,2,3,4].includes(step) || $('card-controls').disabled) return;
     draft.step = step;
