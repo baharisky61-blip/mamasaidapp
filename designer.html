@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Create a Card | Mama Said</title>
-<link rel="stylesheet" href="studio-palette.css"><link rel="stylesheet" href="designer.css"><script src="designer.js?v=voice1" defer></script>
+<link rel="stylesheet" href="studio-palette.css"><link rel="stylesheet" href="designer.css"><script src="designer.js?v=mama2" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#card-controls">Skip to card controls</a>
@@ -39,7 +39,8 @@
         </div>
         <div data-step-content="1" class="starter-layouts"><h3>Optional starter layout</h3><p>Your words and photo stay unchanged.</p><button type="button" data-template="lotus">Lotus on water</button><button type="button" data-template="classic">Classic paper</button></div>
         <div data-step-content="2" hidden>
-        <fieldset class="colors"><legend>Paper &amp; color</legend>
+        <label class="mama-choice" for="show-mama"><input id="show-mama" type="checkbox" checked><img src="mama.jpg" alt="" width="44" height="44">Show Mama on my card</label>
+                <fieldset class="colors"><legend>Paper &amp; color</legend>
           <label><input type="radio" name="background" value="ivory" checked><span class="swatch ivory"></span><span class="swatch-name">Ivory</span></label>
           <label><input type="radio" name="background" value="blush"><span class="swatch blush"></span><span class="swatch-name">Blush</span></label>
           <label><input type="radio" name="background" value="rosewood"><span class="swatch rosewood"></span><span class="swatch-name">Rosewood</span></label>
@@ -50,7 +51,6 @@
           <label><input type="radio" name="background" value="pearl"><span class="swatch pearl"></span><span class="swatch-name">Pearl</span></label>
           <label><input type="radio" name="background" value="champagne"><span class="swatch champagne"></span><span class="swatch-name">Champagne</span></label>
         </fieldset>
-        <label class="mama-choice" for="show-mama"><input id="show-mama" type="checkbox" checked><img src="mama.jpg" alt="" width="44" height="44">Show Mama on my card</label>
         <fieldset class="artwork-options"><legend>Card artwork</legend>
           <label><input type="radio" name="artwork" value="lotus"><span class="artwork-thumbnail" aria-hidden="true"></span>Lotus on water</label>
           <label><input type="radio" name="artwork" value="none"><span class="paper-thumbnail" aria-hidden="true"></span>Plain paper</label>
@@ -135,7 +135,7 @@
 <template id="finished-card-template">
   <section class="finished-card" aria-labelledby="finished-card-heading">
     <h2 id="finished-card-heading" tabindex="-1">Your Finished Card</h2>
-    <div class="finished-card-actions"><button id="hear-mama" type="button" class="voice-button">▶ Hear Mama Say It</button><button id="download-voice" type="button">Save Mama's Voice</button><button id="download-finished-card" type="button" class="download-button">Download My Card</button><button id="edit-finished-card" type="button">Edit My Card</button><button id="restart-finished-card" type="button">Start Over</button></div>
+    <div class="finished-card-actions"><button id="hear-mama" type="button" class="voice-button">▶ Hear Mama Say It</button><button id="download-voice" type="button">Save Mama's Voice</button><button id="download-finished-card" type="button" class="download-button">Download My Card</button><button id="toggle-mama-finished" type="button">Remove Mama</button><button id="edit-finished-card" type="button">Edit My Card</button><button id="restart-finished-card" type="button">Start Over</button></div>
     <p id="voice-status" class="finished-card-notice" role="status" aria-live="polite"></p>
     <p id="download-status" class="finished-card-notice" role="status" aria-live="polite"></p>
     <p class="finished-card-notice">Hear Mama Say It reads your card out loud. Save Mama's Voice keeps it as a sound file, and Download My Card saves the picture. Send both by text or email.</p>

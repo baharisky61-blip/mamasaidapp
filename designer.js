@@ -158,7 +158,8 @@ document.documentElement.classList.add('js');
     if (imageURL) image.src = imageURL;
     else image.removeAttribute('src');
     $('remove-image').disabled = !draft.image;
-    $('image-status').textContent = draft.image ? `${draft.imageName} is on your card.` : 'No image selected.';
+    $('image-status').textContent = draft.image ? `${draft.imageName} is on your card.${$('image-status').dataset.mamaNote ? ' Mama stepped aside for your photo; turn her back on above if you like.' : ''}` : 'No image selected.';
+    delete $('image-status').dataset.mamaNote;
     render();
   }
 
@@ -178,6 +179,7 @@ document.documentElement.classList.add('js');
     }
     $('text-alignment').value = draft.alignment;
     $('show-mama').checked = draft.mama;
+    finishedCard.querySelector('#toggle-mama-finished').textContent = draft.mama ? 'Remove Mama' : 'Put Mama on Card';
     renderStep();
     renderImage();
   }
@@ -296,7 +298,10 @@ document.documentElement.classList.add('js');
   $('card-title').addEventListener('input',event => editorController.setCardTitle(event.target.value));
   $('card-message').addEventListener('input',event => editorController.setCardMessage(event.target.value));
   $('image-description').addEventListener('input',event => {draft.imageDescription = event.target.value;save();});
-  $('show-mama').addEventListener('change',event => {draft.mama = event.target.checked;save();});
+  const mamaToggleFinished = finishedCard.querySelector('#toggle-mama-finished');
+  function setMama(on) { draft.mama = on; $('show-mama').checked = on; mamaToggleFinished.textContent = on ? 'Remove Mama' : 'Put Mama on Card'; save(); }
+  $('show-mama').addEventListener('change',event => setMama(event.target.checked));
+  mamaToggleFinished.addEventListener('click',() => setMama(!draft.mama));
   for (const part of ['title','message']) {
     const prefix = part==='title'?'title-':'';
     $(`${prefix}font-family`).addEventListener('change',event => editorController.changeFontFamily(event.target.value,part));
@@ -335,6 +340,8 @@ document.documentElement.classList.add('js');
       if (version !== uploadVersion) return;
       draft.image = file;
       draft.imageName = file.name;
+      // A personal photo takes Mama's place; she can be turned back on in Design.
+      if (draft.mama) { draft.mama = false; $('show-mama').checked = false; finishedCard.querySelector('#toggle-mama-finished').textContent = 'Put Mama on Card'; $('image-status').dataset.mamaNote = '1'; }
       uploading = false;
       renderImage();
       save();
