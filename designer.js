@@ -397,7 +397,12 @@ document.documentElement.classList.add('js');
     {file:'sunset-family', name:'Sunset family', description:'A family sitting together by the water at sunset'},
     {file:'candlelight-couple', name:'Candlelight couple', description:'A couple smiling at each other by candlelight'},
     {file:'candlelit-table', name:'Candlelit table', description:'A dinner table set with candles and greenery'},
-    {file:'cookout', name:'Cookout', description:'Barbecue ribs with potatoes and fries at a cookout'}
+    {file:'cookout', name:'Cookout', description:'Barbecue ribs with potatoes and fries at a cookout'},
+    {file:'grandparents-couch', name:'Grandparents', description:'Grandparents sitting on a couch with their grandson'},
+    {file:'three-generations', name:'Three generations', description:'A great-grandmother, grandmother, and granddaughter smiling together'},
+    {file:'comfort-embrace', name:'Comfort', description:'A couple holding each other close in an autumn forest'},
+    {file:'white-lilies', name:'White lilies', description:'Soft white lilies in gentle light'},
+    {file:'peaceful-beach', name:'Peaceful beach', description:'Calm turquoise waves on a quiet sandy beach'}
   ];
   cardPictures.forEach(picture => {
     const button = document.createElement('button');
