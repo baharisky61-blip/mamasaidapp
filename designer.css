@@ -115,3 +115,12 @@ body.card-full-view{display:block;height:auto;overflow:auto;padding-bottom:0}.ca
 #card-picture-status:empty{display:none}
 
 .card-picture-list{max-height:420px;overflow-y:auto;padding-right:4px}
+
+/* Phone save: the finished picture with a Save / Share button. */
+.phone-save{position:fixed;inset:0;z-index:100;background:#072f43d9;display:flex;align-items:center;justify-content:center;padding:16px}
+.phone-save-box{background:var(--pearl);border-radius:14px;padding:16px;max-width:520px;width:100%;max-height:100%;overflow:auto;text-align:center}
+.phone-save-box h2{margin:0 0 10px}
+.phone-save-box img{display:block;margin:0 auto 12px;max-width:100%;max-height:55vh;width:auto;height:auto;border-radius:6px;border:1px solid var(--champagne);-webkit-touch-callout:default}
+.phone-save-share{width:100%;background:var(--ocean);color:var(--pearl);font-size:calc(var(--ui-action) * 1.1)}
+.phone-save-help{font-size:var(--ui-secondary);color:var(--ink)}
+.phone-save-close{width:100%}

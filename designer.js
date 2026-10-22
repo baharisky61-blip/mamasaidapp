@@ -719,6 +719,42 @@ document.documentElement.classList.add('js');
   });
   const downloadButton = finishedCard.querySelector('#download-finished-card');
   const downloadStatus = finishedCard.querySelector('#download-status');
+  // Phones and tablets save pictures through the Share menu or press-and-hold, not a Downloads folder.
+  const isPhone = () => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));
+  function showPhoneSave(blob, fileName) {
+    const url = URL.createObjectURL(blob);
+    const isApple = /iPhone|iPad|iPod|Macintosh/i.test(navigator.userAgent);
+    const overlay = document.createElement('div');
+    overlay.className = 'phone-save';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-label', 'Save your card');
+    overlay.innerHTML = `<div class="phone-save-box">
+      <h2>Save your card</h2>
+      <button type="button" class="phone-save-share">Save or Send My Card</button>
+      <p class="phone-save-help"></p>
+      <img alt="Your finished Mama Said card">
+      <button type="button" class="phone-save-close">Done</button>
+    </div>`;
+    overlay.querySelector('img').src = url;
+    const file = new File([blob], fileName, {type: 'image/png'});
+    const shareButton = overlay.querySelector('.phone-save-share');
+    const canShare = !!(navigator.canShare && navigator.canShare({files: [file]}));
+    if (!canShare) shareButton.hidden = true;
+    const holdHelp = isApple ? 'press and hold the picture, then tap "Save to Photos."' : 'press and hold the picture, then tap "Download image."';
+    overlay.querySelector('.phone-save-help').textContent = canShare
+      ? (isApple ? 'Tap the button above, then choose "Save Image" to put it in your Photos. Or ' : 'Tap the button above to save or send it. Or ') + holdHelp
+      : holdHelp.charAt(0).toUpperCase() + holdHelp.slice(1);
+    shareButton.addEventListener('click', async () => {
+      try { await navigator.share({files: [file], title: 'My Mama Said card'}); }
+      catch (error) { if (error.name !== 'AbortError') overlay.querySelector('.phone-save-help').textContent = 'Press and hold the picture, then choose save.'; }
+    });
+    const close = () => { overlay.remove(); URL.revokeObjectURL(url); downloadButton.focus(); };
+    overlay.querySelector('.phone-save-close').addEventListener('click', close);
+    overlay.addEventListener('keydown', event => { if (event.key === 'Escape') close(); });
+    document.body.append(overlay);
+    (shareButton.hidden ? overlay.querySelector('.phone-save-close') : shareButton).focus();
+  }
   downloadButton.addEventListener('click', async () => {
     downloadButton.disabled = true;
     downloadStatus.textContent = 'Getting your card ready…';
@@ -728,8 +764,14 @@ document.documentElement.classList.add('js');
       const canvas = await window.html2canvas($('card-preview'), { scale: 2, backgroundColor: null, useCORS: true });
       const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
       if (!blob) throw Error('No picture');
-      const link = document.createElement('a');
       const name = (draft.title.trim() || 'mama-said-card').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase() || 'mama-said-card';
+      if (isPhone()) {
+        // Phones: show the finished picture with a Save / Share button and press-and-hold help.
+        showPhoneSave(blob, `${name}.png`);
+        downloadStatus.textContent = 'Your card is ready to save to your phone.';
+        return;
+      }
+      const link = document.createElement('a');
       link.download = `${name}.png`;
       link.href = URL.createObjectURL(blob);
       document.body.append(link);
