@@ -1,5 +1,5 @@
 // Mama's voice switch. Set MAMA_VOICE_ON to true when ElevenLabs credits are available.
-window.MAMA_VOICE_ON = false;
+window.MAMA_VOICE_ON = true;
 (function () {
   if (window.MAMA_VOICE_ON) {
     document.documentElement.classList.add('voice-on');
