@@ -393,6 +393,7 @@ document.documentElement.classList.add('js');
 
   // Mama Said picture library (assets/cards). A chosen picture is stored like a personal photo.
   const cardPictures = [
+    {file:'lotus-grandma', name:'Lotus grandma', description:'A smiling grandmother with silver curls, chin on her hand, among white lotus flowers'},
     {file:'family-smiles', name:'Family smiles', description:'A smiling father with his two daughters'},
     {file:'sunset-family', name:'Sunset family', description:'A family sitting together by the water at sunset'},
     {file:'candlelight-couple', name:'Candlelight couple', description:'A couple smiling at each other by candlelight'},
