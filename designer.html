@@ -2,148 +2,173 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Create a Card | Mama Said</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="studio-palette.css"><link rel="stylesheet" href="designer.css?v=lotus2"><script src="designer.js?v=lotusgrandma1" defer></script>
-<script src="voice-config.js?v=2"></script>
+<title>Design Your Card | Mama Said</title>
+<meta name="description" content="Design a Mama Said card that speaks from the heart.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="studio-palette.css"><link rel="stylesheet" href="designer.css?v=onepage1">
+<script src="voice-config.js?v=3"></script>
+<script src="designer.js?v=onepage1" defer></script>
 </head>
 <body>
-<a class="skip-link" href="#card-controls">Skip to card controls</a>
+<a class="skip-link" href="#card-title">Skip to card design</a>
 <header class="designer-header">
-  <a href="index.html" class="brand">Mama Said<span>A little love goes a long way</span></a>
-  <div class="interface-size"><label for="interface-text-size">Website Text Size</label><select id="interface-text-size" aria-describedby="interface-size-description interface-size-status"><option value="normal">Normal</option><option value="large">Large</option><option value="extra-large">Extra Large</option></select><span id="interface-size-description" class="visually-hidden">Changes interface text and controls only. Your card fonts stay unchanged.</span><span id="interface-size-status" role="status"></span></div>
-  <nav aria-label="Studio navigation"><a href="#card-controls" aria-current="page">Create</a><a href="#creative-assistance">Inspiration &amp; Help</a><a href="index.html">Back to homepage</a><button id="help-button" aria-expanded="false" aria-controls="mama-help">Help</button></nav>
-</header>
-<main>
-  <h1 class="visually-hidden">Mama Said card designer</h1>
-  <noscript><p>This editor needs JavaScript for previewing and saving your draft. Please enable JavaScript and refresh.</p></noscript>
-  <nav class="step-navigation" aria-label="Card creation steps">
-    <button type="button" data-step="1" aria-current="step" disabled><span>1</span> Express Yourself</button>
-    <button type="button" data-step="2" disabled><span>2</span> Design Your Card</button>
-    <button type="button" data-step="3" disabled><span>3</span> Personalize</button>
-    <button type="button" data-step="4" disabled><span>4</span> Finished Card</button>
+  <a href="index.html" class="brand" aria-label="Mama Said home">Mama Said<span>A little love goes a long way</span></a>
+  <nav aria-label="Main menu">
+    <a href="#card-title" aria-current="page">Create</a>
+    <button type="button" class="nav-link" data-open="my-cards">My Cards</button>
+    <button type="button" class="nav-link" data-open="occasions">Occasions</button>
+    <a href="#suggestions-title">Inspiration</a>
+    <a href="index.html#how-mama-helps">About Mama</a>
   </nav>
-  <div class="workspace" data-current-step="1">
-    <div class="editing-workspace">
-    <div class="controls-panel" tabindex="0" role="region" aria-label="Card editing controls" aria-describedby="controls-scroll-hint">
-  <h2 id="active-step-heading" tabindex="-1">Step 1 — Express Yourself</h2>
-<p id="active-step-description">Begin with your own words. You can revise them at any time.</p>
-      <p id="save-status" role="status" aria-live="polite">Opening your browser draft…</p>
-      <p id="controls-scroll-hint" class="controls-scroll-hint">Scroll here for more controls. Tab moves between fields.</p>
-      <fieldset id="card-controls" tabindex="-1" disabled>
-        <legend id="controls-legend">Your words</legend>
-        <div data-step-content="1 3" id="wording-controls">
-        
-        <label for="card-title">Card title</label><input id="card-title" type="text" maxlength="200" placeholder="A note for you">
-        <label for="card-message">Your message</label><textarea id="card-message" rows="5" maxlength="10000" placeholder="Write what is on your heart."></textarea>
-        <button id="sayings-button" type="button" aria-expanded="false" aria-controls="mama-sayings">Mama's Sayings</button>
-        <p class="future-dictation">Voice dictation is not connected yet.</p>
-        </div>
-        <div data-step-content="1" class="quick-cards"><h3>Quick Cards</h3><p>In a hurry, baby? Tap a ready-made card. It opens finished, and you can still change the words.</p><div id="quick-card-list" class="quick-card-list"></div></div>
-        <div data-step-content="1" class="starter-layouts"><h3>Optional starter layout</h3><p>Your words and photo stay unchanged.</p><button type="button" data-template="lotus">Lotus on water</button><button type="button" data-template="classic">Classic paper</button></div>
-        <div data-step-content="2" hidden>
-        <label class="mama-choice" for="show-mama"><input id="show-mama" type="checkbox" checked><img src="mama.jpg" alt="" width="44" height="44">Show Mama on my card</label>
-                <fieldset class="colors"><legend>Paper &amp; color</legend>
-          <label><input type="radio" name="background" value="ivory" checked><span class="swatch ivory"></span><span class="swatch-name">Ivory</span></label>
-          <label><input type="radio" name="background" value="blush"><span class="swatch blush"></span><span class="swatch-name">Blush</span></label>
-          <label><input type="radio" name="background" value="rosewood"><span class="swatch rosewood"></span><span class="swatch-name">Rosewood</span></label>
-          <label><input type="radio" name="background" value="gold"><span class="swatch gold"></span><span class="swatch-name">Soft Gold</span></label>
-          <label><input type="radio" name="background" value="plum"><span class="swatch plum"></span><span class="swatch-name">Deep Plum</span></label>
-          <label><input type="radio" name="background" value="ocean"><span class="swatch ocean"></span><span class="swatch-name">Ocean Blue</span></label>
-          <label><input type="radio" name="background" value="turquoise"><span class="swatch turquoise"></span><span class="swatch-name">Turquoise</span></label>
-          <label><input type="radio" name="background" value="pearl"><span class="swatch pearl"></span><span class="swatch-name">Pearl</span></label>
-          <label><input type="radio" name="background" value="champagne"><span class="swatch champagne"></span><span class="swatch-name">Champagne</span></label>
-        </fieldset>
-        <fieldset class="artwork-options"><legend>Card artwork</legend>
-          <label><input type="radio" name="artwork" value="lotus"><span class="artwork-thumbnail" aria-hidden="true"></span>Lotus on water</label>
-          <label><input type="radio" name="artwork" value="none"><span class="paper-thumbnail" aria-hidden="true"></span>Plain paper</label>
-        </fieldset>
-        <div class="card-pictures"><h3>Card Pictures</h3><p>Tap a picture to put it on your card.</p><div id="card-picture-list" class="card-picture-list"></div><p id="card-picture-status" role="status" aria-live="polite"></p></div>
-        <label for="card-image">Or add your own photo</label>
-        <p id="image-guidance">JPEG, PNG, WebP, or GIF. Up to 10 MB; stored in this browser only.</p>
-        <input id="card-image" type="file" accept="image/jpeg,image/png,image/webp,image/gif" aria-describedby="image-guidance image-status">
-        <p id="image-status" role="status" aria-live="polite">No image selected.</p>
-        <label for="image-description">Image description</label><input id="image-description" type="text" maxlength="300" placeholder="Describe your image">
-        <button id="remove-image" type="button" disabled>Remove image</button>
-        </div>
-        <fieldset data-step-content="3" class="typography-controls" hidden><legend>Make it feel like you</legend>
-          <fieldset class="text-part-controls"><legend>Title</legend><div class="short-controls">
-            <div class="short-field"><label for="title-font-family">Title font</label><select id="title-font-family"><option value="serif">Georgia (classic)</option><option value="sans">System sans</option><option value="lora">Lora</option><option value="bree">Bree Serif</option><option value="atkinson">Atkinson</option><option value="mono">Roboto Mono</option><option value="lato">Lato</option></select></div>
-            <div class="short-field"><label for="title-font-size">Title size</label><select id="title-font-size"><option value="18">18 px</option><option value="20">20 px</option><option value="24">24 px</option><option value="28">28 px</option><option value="32">32 px</option><option value="34">34 px</option><option value="36">36 px</option><option value="40">40 px</option><option value="44">44 px</option><option value="48">48 px</option><option value="56">56 px</option><option value="64">64 px</option></select></div>
-            <div class="short-field"><label for="title-text-color">Title color</label><select id="title-text-color" aria-describedby="title-contrast-status"><option value="auto">Auto (paper)</option><option value="#072F43">Deep ocean</option><option value="#15313F">Dark slate</option><option value="#FFFCF5">Pearl white</option><option value="#000000">Black</option><option value="#93601F">Gold</option><option value="#C76D74">Rosewood</option></select></div>
-            <label class="backing-choice" for="title-text-backing"><input id="title-text-backing" type="checkbox">Title backing</label>
-          </div><p id="title-contrast-status" class="contrast-status" role="status" aria-live="polite"></p></fieldset>
-          <fieldset class="text-part-controls"><legend>Message</legend><div class="short-controls">
-            <div class="short-field"><label for="font-family">Message font</label><select id="font-family"><option value="serif">Georgia (classic)</option><option value="sans">System sans</option><option value="lora">Lora</option><option value="bree">Bree Serif</option><option value="atkinson">Atkinson</option><option value="mono">Roboto Mono</option><option value="lato">Lato</option></select></div>
-            <div class="short-field"><label for="font-size">Message size</label><select id="font-size"><option value="18">18 px</option><option value="20">20 px</option><option value="24">24 px</option><option value="28">28 px</option><option value="32">32 px</option></select></div>
-            <div class="short-field"><label for="text-color">Message color</label><select id="text-color" aria-describedby="message-contrast-status"><option value="auto">Auto (paper)</option><option value="#072F43">Deep ocean</option><option value="#15313F">Dark slate</option><option value="#FFFCF5">Pearl white</option><option value="#000000">Black</option><option value="#93601F">Gold</option><option value="#C76D74">Rosewood</option></select></div>
-            <label class="backing-choice" for="message-text-backing"><input id="message-text-backing" type="checkbox">Message backing</label>
-          </div><p id="message-contrast-status" class="contrast-status" role="status" aria-live="polite"></p></fieldset>
-          <div class="short-field alignment-field"><label for="text-alignment">Text alignment</label><select id="text-alignment"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></div>
-          <p id="font-load-status" class="contrast-status" role="status" aria-live="polite"></p>
-          <p id="text-style-status" role="status" aria-live="polite">Your chosen colors are kept. Backing is optional.</p>
-        </fieldset>
-
-        <div class="reset-area"><button id="start-over" type="button">Start Over</button></div>
-      </fieldset>
-      <details class="draft-information"><summary>About your browser draft</summary><p class="storage-note">One draft stays in this browser when storage is available. Private browsing or clearing site data can remove it. Sending and exporting are not available yet.</p></details>
-    </div>
-    <div class="preview-panel">
-      <div class="preview-heading-row"><h2 id="preview-heading" tabindex="-1">Live card preview</h2><span class="live-indicator">Live</span>
-      <div class="preview-actions"><button id="view-card-button" type="button">View My Card</button><button id="close-card-view" type="button" hidden>Return to Editing</button><a class="return-to-controls" href="#card-controls">Back to card controls</a></div></div>
-      <div class="preview-fit-area" tabindex="0" role="region" aria-label="Card preview. Scroll here to read a longer card."><div class="card-stage"><article id="card-preview" class="card ivory" aria-labelledby="preview-heading">
-        <img id="preview-mama" class="card-mama" src="mama.jpg" alt="Mama, the Mama Said grandmother"><p class="card-overline">A LITTLE LOVE</p><img id="preview-image" hidden alt="">
-        <h3 id="preview-title"><span id="preview-title-text">A note for you</span></h3><div class="card-divider" aria-hidden="true"></div>
-        <p id="preview-message"><span id="preview-message-text">Your personal message will appear here.</span></p><span class="signature">Made with care · Mama Said</span>
-      </article></div></div>
-      <p class="preview-note">Your own words. A beautiful beginning.</p>
-    </div>
-    <aside id="creative-assistance" class="assistance-panel" aria-label="Creative assistance">
-      <div class="assistance-box sayings-shortcut" data-step-content="1 3"><h2>Cultural Voice</h2><button id="sayings-assist-button" type="button" aria-controls="mama-sayings">Explore Mama's Sayings</button><p class="collection-note">99 original expressions, with spelling notes.</p></div>
-      <aside data-step-content="1 3" id="mama-sayings" aria-labelledby="sayings-title" hidden>
-        <div class="help-heading"><h2 id="sayings-title" tabindex="-1">Mama's Sayings</h2><button id="close-sayings" type="button">Close Sayings</button></div>
-        <p>Add an expression to your message, then edit it as you like.</p>
-        <label for="sayings-search">Search Mama's Sayings</label><input id="sayings-search" type="search" disabled aria-describedby="sayings-status" autocomplete="off">
-        <p id="sayings-status" role="status" aria-live="polite">Open the collection to browse all 99 expressions.</p>
-        <ol id="sayings-results" aria-label="Matching sayings"></ol><p id="sayings-add-status" role="status" aria-live="polite"></p>
-        <button id="return-from-sayings" type="button">Return to My Card</button>
-      </aside>
-      <details class="assistance-box inspiration-box" data-step-content="1 3" open><summary>Mama's Suggestions</summary><p>Pick a feeling. Mama will offer words you can add to your card, then change any way you like.</p>
-        <div class="inspiration-options">
-          <button type="button" data-words="Honey, you got all that experience. There&#x27;s got to be something in there you can do. Your brain already knows what you need. But first, you have to accept that you need it." data-prompt="Think of one small strength you admire in this person. What would you like them to remember today?">Encouragement<span aria-hidden="true">›</span></button>
-          <button type="button" data-words="I appreciate you. Nobody can be mad at your gratitude, so here&#x27;s mine." data-prompt="Remember something this person did that made a difference. Tell them why it stayed with you.">Appreciation<span aria-hidden="true">›</span></button>
-          <button type="button" data-words="Let your light shine, baby! Look what you were able to do. I&#x27;m so thankful, and I&#x27;m celebrating you." data-prompt="What happened that made you smile? Share the moment and what it means to you.">Good news<span aria-hidden="true">›</span></button>
-          <button type="button" data-words="We don&#x27;t fail, we just experience them. Then we look back and decide what to do different. Every day you wake up with new thoughts, so use them." data-prompt="What are you looking forward to in this next chapter? Offer a little hope for the way ahead.">New beginnings<span aria-hidden="true">›</span></button>
-          <button type="button" data-words="I was thinking about my family today, and you came right to my heart. I appreciate you, and I&#x27;ll be there." data-prompt="Recall a moment of belonging. What would you like your family member to know?">Family<span aria-hidden="true">›</span></button>
-          <button type="button" data-words="What&#x27;s going on? Talk to me about that. You good peoples, and I&#x27;ll be there." data-prompt="Think of a memory only the two of you share. What makes this friendship special?">Friendship<span aria-hidden="true">›</span></button>
-          <button type="button" data-words="You were on my mind today, baby. When you&#x27;re feeling low, get around people. A walk in the mall, a funny podcast, dancing by yourself breaks the spell." data-prompt="What brought this person to mind today? A simple, specific memory can say so much.">Thinking of You<span aria-hidden="true">›</span></button>
-          <button type="button" data-words="No reason. Just because. I appreciate you, baby. Celebrate you." data-prompt="You do not need an occasion. What small thing would you like someone to hear from you?">Just Because<span aria-hidden="true">›</span></button>
-        </div><p id="inspiration-prompt" role="status" aria-live="polite">Choose a feeling above.</p>
-        <div id="inspiration-offer" hidden><p class="inspiration-label">Mama says:</p><blockquote id="inspiration-words"></blockquote><button id="add-inspiration" type="button">Add these words to my card</button><p id="inspiration-add-status" role="status" aria-live="polite"></p></div>
-      </details>
-      <div class="assistance-box help-shortcut"><h2>A helping hand</h2><button id="help-assist-button" type="button" aria-controls="mama-help">Open Help</button></div>
-      <aside id="mama-help" aria-labelledby="help-title" hidden>
-        <div class="help-heading"><h2 id="help-title" tabindex="-1">Mama Said Help</h2><button id="close-help" type="button">Close Help</button></div>
-        <img class="help-portrait" src="mama.jpg" alt="Mama, the Mama Said AI grandmother" width="128" height="128">
-        <p id="step-help-text">Take your time, baby. This card is yours to make.</p>
-        <details class="help-details"><summary>More about the controls</summary><ul><li>Text and design choices update the preview immediately.</li><li>Replace or remove your photo in Design. Use arrow keys for color choices.</li><li>Help and step changes keep your draft. Start Over always asks first.</li></ul></details>
-        <p class="voice-note"><strong>Future voice assistance</strong><br>ElevenLabs is not connected. No call starts here.</p><button id="return-from-help" type="button">Return to My Card</button>
-      </aside>
-    </aside>
-    </div>
-
+  <form class="site-search" role="search" id="search-form">
+    <label for="site-search" class="visually-hidden">Search sayings, phrases, or occasions</label>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+    <input id="site-search" type="search" placeholder="Search sayings, phrases, or occasions…" autocomplete="off">
+  </form>
+  <div class="header-tools">
+    <label class="text-size" title="Website text size"><span aria-hidden="true">Aa</span><span class="visually-hidden">Website text size</span>
+      <select id="interface-text-size"><option value="normal">Normal</option><option value="large">Large</option><option value="extra-large">Extra Large</option></select>
+    </label>
   </div>
-  <div class="step-actions"><button id="previous-step" type="button" disabled>Previous step</button><p id="step-position" aria-live="polite">Step 1 of 4</p><button id="next-step" type="button" disabled>Next: Design Your Card</button></div>
+</header>
 
-</main>
-<template id="finished-card-template">
-  <section class="finished-card" aria-labelledby="finished-card-heading">
-    <h2 id="finished-card-heading" tabindex="-1">Your Finished Card</h2>
-    <div class="finished-card-actions"><button id="hear-mama" type="button" class="voice-button voice-only">▶ Hear Mama Say It</button><button id="download-voice" type="button" class="voice-only">Save Mama's Voice</button><button id="download-finished-card" type="button" class="download-button">Download My Card</button><button id="toggle-mama-finished" type="button">Remove Mama</button><button id="edit-finished-card" type="button">Edit My Card</button><button id="restart-finished-card" type="button">Start Over</button></div>
-    <p id="voice-status" class="finished-card-notice" role="status" aria-live="polite"></p>
-    <p id="download-status" class="finished-card-notice" role="status" aria-live="polite"></p>
-    <p class="finished-card-notice voice-soon">Mama's voice is coming soon. For now, tap Download My Card to save your card as a picture you can text, email, or print.</p>
-    <p class="finished-card-notice voice-only">Hear Mama Say It reads your card out loud. Save Mama's Voice keeps it as a sound file, and Download My Card saves the picture. Send both by text or email.</p>
+<main class="studio">
+  <h1 class="visually-hidden">Mama Said card designer</h1>
+  <noscript><p class="noscript">This card designer needs JavaScript. Please turn it on and refresh.</p></noscript>
+
+  <!-- Left: everything you choose -->
+  <section class="panel design-panel" aria-labelledby="design-title">
+    <div class="panel-heading">
+      <span class="lotus-mark" aria-hidden="true"></span>
+      <div><h2 id="design-title">Design Your Card</h2><p>Create a card that speaks from the heart.</p></div>
+    </div>
+
+    <label for="card-title">Card Title</label>
+    <input id="card-title" type="text" maxlength="80" placeholder="A note for you" autocomplete="off">
+    <span class="counter" id="title-count" aria-hidden="true">0/80</span>
+
+    <label for="card-message">Your Message</label>
+    <textarea id="card-message" maxlength="500" rows="5" placeholder="Write what's on your heart…&#10;Mama Said will help you find the right words if you need inspiration."></textarea>
+    <span class="counter" id="message-count" aria-hidden="true">0/500</span>
+
+    <div class="button-row">
+      <button type="button" class="primary quote" data-open="sayings">Mama's Sayings</button>
+      <button type="button" class="outline bulb" id="get-inspiration">Get Inspiration</button>
+    </div>
+
+    <h3>Background &amp; Style</h3>
+    <div class="style-tiles" role="radiogroup" aria-label="Background and style" id="style-tiles"></div>
+
+    <h3>Card Pictures</h3>
+    <div class="picture-grid" id="picture-grid"></div>
+    <button type="button" class="outline wide" data-open="pictures">See all pictures</button>
+
+    <h3>Words</h3>
+    <div class="segmented" role="group" aria-label="Words color">
+      <button type="button" data-ink="dark" aria-pressed="true">Dark words</button>
+      <button type="button" data-ink="light" aria-pressed="false">Light words</button>
+    </div>
+    <div class="segmented" role="group" aria-label="Words size">
+      <button type="button" data-size="normal" aria-pressed="true">Normal size</button>
+      <button type="button" data-size="large" aria-pressed="false">Large size</button>
+    </div>
+    <label class="check"><input type="checkbox" id="show-mama"> Put Mama's picture on my card</label>
+
+    <h3>Add a Personal Image <span class="optional">(Optional)</span></h3>
+    <div class="file-row">
+      <span class="file-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 17-5-5-9 8"/></svg></span>
+      <label class="file-button" for="card-image">Choose File</label>
+      <input id="card-image" class="visually-hidden" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
+      <span id="image-name" class="file-name">No file chosen</span>
+    </div>
+
+    <h3>Add Sound <span class="optional">(Optional)</span></h3>
+    <p class="hint">Add your own music, or say the card in your own voice.</p>
+    <div class="file-row">
+      <span class="file-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span>
+      <label class="file-button" for="card-sound">Upload Music</label>
+      <input id="card-sound" class="visually-hidden" type="file" accept="audio/*">
+      <button type="button" class="file-button record" id="record-voice">● Record My Voice</button>
+    </div>
+    <div id="sound-box" class="sound-box" hidden>
+      <p id="sound-name"></p>
+      <audio id="sound-player" controls preload="metadata"></audio>
+      <div class="button-row"><button type="button" class="outline" id="save-sound">Save My Sound</button><button type="button" class="outline" id="remove-sound">Remove Sound</button></div>
+    </div>
+    <p id="sound-status" class="status" role="status" aria-live="polite"></p>
+
+    <div class="panel-footer">
+      <button type="button" class="outline restart" id="start-over">Start Over</button>
+      <p class="lock-note"><span aria-hidden="true">🔒</span> Your draft stays in this browser until you clear your data.</p>
+    </div>
+    <p id="save-status" class="visually-hidden" role="status" aria-live="polite"></p>
   </section>
-</template>
-</body></html>
+
+  <!-- Middle: the card -->
+  <section class="card-area" aria-label="Your card">
+    <div class="card-stage" id="card-stage">
+      <article id="card" class="card" aria-label="Card preview">
+        <div class="card-scrim" aria-hidden="true"></div>
+        <div class="card-words">
+          <p class="card-top" id="card-top"></p>
+          <h2 class="card-script" id="card-script"></h2>
+          <div class="card-ornament" aria-hidden="true"><span></span><i>♥</i><span></span></div>
+          <p class="card-message" id="card-message-text"></p>
+        </div>
+        <img id="card-mama" class="card-mama" src="mama.jpg" alt="" hidden>
+        <span class="card-signature">Mama Said</span>
+        <span class="card-sound-chip" id="card-sound-chip" hidden>♪ Has sound</span>
+      </article>
+    </div>
+    <div class="card-tools">
+      <button type="button" class="round arrow" id="previous-picture" aria-label="Previous picture"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/><path d="M8 12h12"/></svg></button>
+      <button type="button" class="tool" id="zoom-card"><span class="round"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4M11 8v6M8 11h6"/></svg></span>Zoom</button>
+      <button type="button" class="tool" id="fit-card"><span class="round"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg></span>Fit</button>
+      <button type="button" class="tool" id="download-card"><span class="round"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></span>Download</button>
+      <button type="button" class="tool voice-only" id="hear-mama"><span class="round"><svg viewBox="0 0 24 24"><path d="M4 10v4h4l5 4V6L8 10z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg></span><span id="hear-mama-label">Hear Mama</span></button>
+      <button type="button" class="round arrow" id="next-picture" aria-label="Next picture"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/><path d="M16 12H4"/></svg></button>
+    </div>
+    <div class="card-links">
+      <button type="button" class="link-button voice-only" id="save-mama-voice">Save Mama's voice</button>
+      <button type="button" class="link-button" id="save-to-my-cards">Save to My Cards</button>
+    </div>
+    <p id="card-status" class="status center" role="status" aria-live="polite"></p>
+  </section>
+
+  <!-- Right: Mama's help -->
+  <aside class="side" aria-label="Mama's help">
+    <section class="panel side-box" aria-labelledby="voice-title">
+      <h2 id="voice-title" class="with-lotus">Cultural Voice</h2>
+      <p>Browse 99 original Mama Said expressions to add to your card.</p>
+      <button type="button" class="primary quote wide chevron" data-open="sayings">Explore Mama's Sayings</button>
+    </section>
+    <section class="panel side-box" aria-labelledby="suggestions-title">
+      <h2 id="suggestions-title" class="with-bulb" tabindex="-1">Mama's Suggestions</h2>
+      <p>Here are a few ideas to get you started.</p>
+      <div class="suggestion-list" id="suggestion-list"></div>
+      <div id="suggestion-offer" class="suggestion-offer" hidden>
+        <p class="offer-label">Mama says:</p>
+        <blockquote id="suggestion-words"></blockquote>
+        <button type="button" class="primary wide" id="add-suggestion">Add to my card</button>
+      </div>
+    </section>
+  </aside>
+</main>
+
+<!-- Drawers -->
+<dialog id="drawer" class="drawer" aria-labelledby="drawer-title">
+  <div class="drawer-head"><h2 id="drawer-title"></h2><button type="button" class="outline" id="close-drawer">Close</button></div>
+  <div id="drawer-body" class="drawer-body"></div>
+</dialog>
+
+<!-- Phone save screen -->
+<dialog id="phone-save" class="phone-save" aria-labelledby="phone-save-title">
+  <h2 id="phone-save-title">Save your card</h2>
+  <button type="button" class="primary wide" id="phone-share">Save or Send My Card</button>
+  <p id="phone-save-help"></p>
+  <img id="phone-save-image" alt="Your finished Mama Said card">
+  <button type="button" class="outline wide" id="phone-save-done">Done</button>
+</dialog>
+</body>
+</html>
