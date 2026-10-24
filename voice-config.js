@@ -6,7 +6,7 @@ window.MAMA_AGENT_ID = 'agent_5601m50qpec0exstzb42a0cqp2yp';
     document.documentElement.classList.add('voice-on');
     // Tap Mama's face to talk (mama-talk.js). The old ElevenLabs corner box is no longer used.
     var script = document.createElement('script');
-    script.src = 'mama-talk.js?v=1';
+    script.src = 'mama-talk.js?v=2';
     script.defer = true;
     document.head.appendChild(script);
   } else {

@@ -1,830 +1,536 @@
 'use strict';
-document.documentElement.classList.add('js');
+// Mama Said card designer — one page (Oct 2026).
+// Everything a customer makes stays in their own browser (IndexedDB): words, picture, sound, and My Cards.
 (() => {
-  // Retain editor references while its DOM is detached for the finished-card view.
-  const editorElements = new Map([...document.querySelectorAll('[id]')].map(element => [element.id,element]));
-  const $ = id => document.getElementById(id) || editorElements.get(id);
-  const workspace = document.querySelector('.workspace');
-  const editingWorkspace = document.querySelector('.editing-workspace');
-  const navigationActions = document.querySelector('.step-actions');
-  const finishedCard = $('finished-card-template').content.firstElementChild.cloneNode(true);
-  function restoreEditingWorkspace() {
-    if (!finishedCard.isConnected) return;
-    editingWorkspace.querySelector('.preview-panel').insertBefore(finishedCard.querySelector('.preview-fit-area'),editingWorkspace.querySelector('.preview-note'));
-    workspace.replaceChildren(editingWorkspace);
-    workspace.after(navigationActions);
-    $('card-preview').setAttribute('aria-labelledby','preview-heading');
-  }
-  function presentFinishedCard() {
-    finishedCard.insertBefore(editingWorkspace.querySelector('.preview-fit-area'),finishedCard.querySelector('.finished-card-actions'));
-    workspace.replaceChildren(finishedCard);
-    navigationActions.remove();
-    $('card-preview').setAttribute('aria-labelledby','finished-card-heading');
-  }
-  // Interface preference is separate from the card draft and its typography.
-  const interfaceSizeKey = 'mama-said-interface-text-size';
-  const interfaceSizes = ['normal','large','extra-large'];
-  function applyInterfaceSize(value) {
-    const size = interfaceSizes.includes(value) ? value : 'normal';
-    document.documentElement.dataset.textSize = size;
-    $('interface-text-size').value = size;
-  }
-  try { applyInterfaceSize(localStorage.getItem(interfaceSizeKey)); }
-  catch { applyInterfaceSize('normal'); $('interface-size-status').textContent = 'Text size works here, but browser storage is unavailable.'; }
-  $('interface-text-size').addEventListener('change',event => {
-    applyInterfaceSize(event.target.value);
-    try {
-      localStorage.setItem(interfaceSizeKey,event.target.value);
-      $('interface-size-status').textContent = '';
-    } catch { $('interface-size-status').textContent = 'Text size changed for this page, but could not be saved for next time.'; }
-  });
+  const $ = id => document.getElementById(id);
+  const card = $('card');
 
-  const colors = ['ivory', 'blush', 'rosewood', 'gold', 'plum', 'ocean', 'turquoise', 'pearl', 'champagne'];
-  const fonts = {serif:'Georgia, serif',sans:'system-ui, sans-serif',lora:'"Mama Lora", serif',bree:'"Mama Bree", serif',atkinson:'"Mama Atkinson", sans-serif',mono:'"Mama Mono", monospace',lato:'"Mama Lato", sans-serif'};
-  const textColors = ['auto','#072F43','#15313F','#FFFCF5','#000000','#93601F','#C76D74'];
-  const titleSizes = [18,20,24,28,32,34,36,40,44,48,56,64];
-  const messageSizes = [18,20,24,28,32];
-  const empty = () => ({ title: '', message: '', color: 'ivory', image: null, imageName: '', imageDescription: '', artwork: 'lotus', step: 1, fontFamily: 'serif', fontSize: 20, textColor: 'auto', alignment: 'left', typographyVersion:2, titleFontFamily:'serif',messageFontFamily:'serif',titleFontSize:36,messageFontSize:20,titleTextColor:'auto',messageTextColor:'auto',titleTextBacking:false,messageTextBacking:false, mama:true });
-  let draft = empty();
-  let db;
-  let imageURL;
-  let uploadVersion = 0;
-  let uploading = false;
-  let pending = 0;
-  let revision = 0;
-  let unsaved = false;
-  let queue = Promise.resolve();
-  const status = text => { if ($('save-status').textContent !== text) $('save-status').textContent = text; };
-  const storageWarning = 'Draft not saved in this browser. Keep this page open; refreshing or leaving may lose your latest edits and image. Browser storage may be blocked or full.';
-  const stepNames = ['Express Yourself', 'Design Your Card', 'Personalize', 'Finished Card'];
-  const stepDescriptions = ['Begin with your own words. You can revise them at any time.', 'Choose the paper, artwork, or your own photo. Your message stays with you.', 'Make your words comfortable to read. You can also revise your message or add a saying.', 'Your finished card.'];
-  const backgrounds = {ivory:'#FFF7F1',blush:'#F3D1D4',rosewood:'#C76D74',gold:'#D4A574',plum:'#5E2E45',ocean:'#0B4057',turquoise:'#14788A',pearl:'#FFFCF5',champagne:'#E3CAA0'};
-  function contrast(a, b) {
-    const luminance = hex => {
-      const rgb = [1,3,5].map(i => parseInt(hex.slice(i,i+2),16)/255).map(n => n <= .04045 ? n/12.92 : ((n+.055)/1.055)**2.4);
-      return rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722;
-    };
-    const values = [luminance(a),luminance(b)].sort((x,y)=>x-y);
-    return (values[1]+.05)/(values[0]+.05);
-  }
-  let fontRenderVersion = 0;
-  const loadedFonts = new Map();
-  function verifyFonts() {
-    const version = ++fontRenderVersion;
-    const choices = [...new Set([draft.titleFontFamily,draft.messageFontFamily])].filter(key=>!['serif','sans'].includes(key));
-    if (!choices.length) { $('font-load-status').textContent = ''; return; }
-    $('font-load-status').textContent = 'Loading your selected fonts…';
-    Promise.all(choices.map(key=>{
-      if (!loadedFonts.has(key)) {
-        const family = fonts[key].split(',')[0];
-        const promise = document.fonts.load(`20px ${family}`).then(faces=>{if (!faces.length) throw Error('Font unavailable');});
-        loadedFonts.set(key,promise);
-        promise.catch(()=>loadedFonts.delete(key));
-      }
-      return loadedFonts.get(key);
-    })).then(()=>{if(version===fontRenderVersion) $('font-load-status').textContent='Selected fonts loaded.';})
-      .catch(()=>{if(version===fontRenderVersion) $('font-load-status').textContent='A selected font could not load. A fallback is visible; your selection is saved. Refresh to retry.';});
-  }
-  function composite(backing, paper, opacity) {
-    return '#'+[1,3,5].map(i=>Math.round(parseInt(backing.slice(i,i+2),16)*opacity+parseInt(paper.slice(i,i+2),16)*(1-opacity)).toString(16).padStart(2,'0')).join('');
-  }
-
-  function renderStep() {
-    restoreEditingWorkspace();
-    const step = draft.step;
-    document.querySelectorAll('[data-step-content]').forEach(panel => {
-      const available = panel.dataset.stepContent.split(' ').includes(String(step));
-      if (panel.id === 'mama-sayings') {
-        if (!available) { panel.hidden = true; $('sayings-button').setAttribute('aria-expanded','false'); }
-      } else panel.hidden = !available;
-    });
-    document.querySelectorAll('[data-step]').forEach(button => {
-      if (Number(button.dataset.step) === step) button.setAttribute('aria-current','step');
-      else button.removeAttribute('aria-current');
-    });
-    document.querySelector('.workspace').dataset.currentStep = step;
-    $('active-step-heading').textContent = `Step ${step} — ${stepNames[step-1]}`;
-    $('active-step-description').textContent = stepDescriptions[step-1];
-    $('controls-legend').textContent = ['Your words','Your design','Your personal touch','Your Finished Card'][step-1];
-    $('step-help-text').textContent = `Step ${step}: ${stepDescriptions[step-1]} Take your time, baby. Your edits stay on your card.`;
-    $('step-position').textContent = `Step ${step} of 4`;
-    $('previous-step').disabled = step === 1;
-    $('next-step').disabled = step === 4;
-    $('next-step').textContent = step === 4 ? 'Finished Card' : `Next: ${stepNames[step]}`;
-    document.querySelector('main').dataset.finished = String(step === 4);
-    if (step === 4) presentFinishedCard();
-  }
-
+  /* ---------- Data ---------- */
+  const styles = [
+    {id:'lotus', name:'Lotus on water', bg:"url('assets/lotus-water.png')", ink:'dark', full:false},
+    {id:'pearl', name:'Pearl silk', bg:'linear-gradient(135deg,#fffaf2 0%,#efe2cf 38%,#fffdf8 62%,#e7d6bf 100%)', ink:'dark', full:true},
+    {id:'ocean', name:'Deep ocean', bg:'radial-gradient(circle at 28% 18%,#2a8199 0%,#0b4057 52%,#06283a 100%)', ink:'light', full:true},
+    {id:'gold', name:'Soft gold', bg:'linear-gradient(135deg,#b4843f 0%,#f0d49a 38%,#c4954f 68%,#f6e4bb 100%)', ink:'dark', full:true},
+    {id:'ivory', name:'Ivory white', bg:'radial-gradient(circle at 50% 40%,#ffffff 0%,#f6f1e9 60%,#ebe2d4 100%)', ink:'dark', full:true},
+    {id:'royal', name:'Royal blue', bg:'radial-gradient(circle at 72% 62%,#8dbbff 0%,#2350b9 45%,#0c2163 100%)', ink:'light', full:true}
+  ];
+  const cardPictures = [
+    ['lotus-grandma-card','Lotus grandma',true],['family-smiles','Family smiles'],['sunset-family','Sunset family'],['candlelight-couple','Candlelight couple'],['candlelit-table','Candlelit table'],['cookout','Cookout'],['grandparents-couch','Grandparents'],['three-generations','Three generations'],['comfort-embrace','Comfort'],['white-lilies','White lilies'],['peaceful-beach','Peaceful beach'],['cozy-fireplace','Cozy fireplace'],['cozy-couch','Cozy couch'],['sunny-living-room','Sunny living room'],['garden-retreat','Garden retreat'],['candle-branch','Candle and branch'],['candle-window','Candle by the window'],['bride-roses','Bride in roses'],['bride-garden','Bride in the garden'],['flower-arch','White flower arch'],['wedding-cake','Wedding cake'],['candlelit-canopy','Candlelit canopy'],['garden-party-lights','Garden party'],['golden-hour-beauty','Golden hour beauty'],['golden-mermaid','Golden mermaid'],['silver-mermaid','Silver mermaid'],['space-queen','Space queen'],['cuddle-candlelight','Cuddle by candlelight'],['flowers-for-you','Flowers for you'],['i-love-you-roses','I love you roses'],['wildflower-path','Wildflower path'],['happy-friends','Happy friends'],['jelly-buddies','Jelly buddies'],['just-checking-in','Just checking in'],['grandma-tea-window','Grandma with tea'],['tea-with-friends','Tea with friends'],['warm-tea-hands','Warm tea'],['held-in-comfort','Held in comfort'],['helping-hand','Helping hand'],['royal-blue-couple','Royal blue couple'],['elegant-evening','Elegant evening'],['glowing-rose','Glowing rose'],['golden-goddess','Golden goddess'],['royal-couple','Royal couple'],['golden-years-love','Golden years love'],['slow-dance','Slow dance'],['sunset-embrace','Sunset embrace'],['paris-evening','Paris evening'],['lantern-walk','Lantern walk'],['golden-field-walk','Golden field walk'],['starry-camp','Starry campout'],['candlelit-bath','Candlelit bath'],['doves-birdbath','Doves in love'],['doves-branch','Doves on a branch'],['doves-lantern','Doves by lantern'],['red-roses','Red roses'],['ring-box','Ring box'],['two-mugs','Two mugs'],['porch-rockers','Porch rockers'],['sistas-laughing','Sistas laughing'],['morning-park','Morning park'],['golden-afro-combs','Golden afro combs'],['golden-bloom','Golden bloom'],['jeweled-mandala','Jeweled mandala'],['starry-night','Starry night'],['football-field','Football field'],['stadium-lights','Stadium lights'],['baseball-diamond','Baseball diamond'],['ballpark-grass','Ballpark'],['basketball-sunset','Basketball sunset'],['neighborhood-court','Neighborhood court'],['star-gold','Gold star'],['star-silver','Silver star'],['star-pink','Pink star'],['star-soft-pink','Soft pink star'],['star-red','Red star'],['star-purple','Purple star'],['star-blue','Blue star'],['star-sky-blue','Sky blue star'],['star-green','Green star']
+  ].map(([file,name,art]) => ({file,name,art:!!art}));
   // Ready-made cards in Mama's voice, built from Nelcea's own sayings. No holidays.
   const quickCards = [
-    {group:'Encouragement', title:"You've Got This, Baby", color:'pearl', artwork:'lotus', message:"Honey, you got all that experience. There's got to be something in there you can do. Your brain already knows what you need. Go on, baby. I believe in you."},
-    {group:'Encouragement', title:'Keep Going', color:'ocean', artwork:'none', message:"We don't fail, we just experience them. Then we look back and decide what to do different. Every day you wake up with new thoughts, so use them."},
-    {group:'Appreciation', title:'I Appreciate You', color:'champagne', artwork:'none', message:"I appreciate you. You good peoples, and I see everything you do. Nobody can be mad at your gratitude, so here's mine."},
-    {group:'Appreciation', title:'Thank You, Sistah', color:'blush', artwork:'none', message:"Thank you for the heart you pour into everything you do. I know that's right! I appreciate you more than you know."},
-    {group:'Proud of You', title:'Let Your Light Shine', color:'gold', artwork:'none', message:"Let your light shine, baby! Look what you were able to do. I'm so proud of you, and I'm so thankful."},
-    {group:'Proud of You', title:'Celebrate You', color:'turquoise', artwork:'none', message:"Let's get it! You did that. Celebrate you today, because you earned it."},
-    {group:'New Beginnings', title:'A Fresh Start', color:'pearl', artwork:'lotus', message:"Every day you wake up with new thoughts, so use them. Piece by piece, you're building something beautiful."},
-    {group:'New Beginnings', title:'Let It Go', color:'ocean', artwork:'none', message:"Let it go, baby. Move on. What's ahead of you is better than what's behind you, and I'll be there cheering you on."},
-    {group:'Family', title:'Grandma Loves You', color:'ivory', artwork:'lotus', message:"Grandma loves you so much, baby. You make my heart so happy. I'll be there for you, always."},
-    {group:'Family', title:'Family Is Everything', color:'champagne', artwork:'none', message:"My brother, my sister, my cousin. Family is everything. I appreciate you, and I'll be there."},
-    {group:'Friendship', title:'You Good Peoples', color:'plum', artwork:'none', message:"Girl, you know you my sistah. You good peoples, and I appreciate you. I'll be there, always."},
-    {group:'Friendship', title:"What's Going On?", color:'turquoise', artwork:'none', message:"What's going on? Talk to me about that. I'm here, and I'll be there."},
-    {group:'Thinking of You', title:'Thinking of You', color:'blush', artwork:'lotus', message:"You were on my mind today, baby. I just wanted you to know somebody loves you."},
-    {group:"You're Not Alone", title:"You're Not Alone", color:'pearl', artwork:'lotus', message:"Loneliness is part of life. But when you're sad, get around people. A walk in the mall, a funny podcast, dancing by yourself breaks the spell. And call me. I'll be there."},
-    {group:'Just Because', title:'Just Because', color:'gold', artwork:'none', message:"No reason. Just because. I appreciate you, baby. Celebrate you."},
-    {group:'Just Because', title:'Stay Humble', color:'ocean', artwork:'none', message:"Stay humble, keep your energy right, and protect your boundaries. You're doing better than you think."}
+    {group:'Encouragement', title:"You've Got This, Baby", message:"Honey, you got all that experience. There's got to be something in there you can do. Your brain already knows what you need. Go on, baby. I believe in you."},
+    {group:'Encouragement', title:'Keep Going', message:"We don't fail, we just experience them. Then we look back and decide what to do different. Every day you wake up with new thoughts, so use them."},
+    {group:'Appreciation', title:'I Appreciate You', message:"I appreciate you. You good peoples, and I see everything you do. Nobody can be mad at your gratitude, so here's mine."},
+    {group:'Appreciation', title:'Thank You, Sistah', message:"Thank you for the heart you pour into everything you do. I know that's right! I appreciate you more than you know."},
+    {group:'Proud of You', title:'Let Your Light Shine', message:"Let your light shine, baby! Look what you were able to do. I'm so proud of you, and I'm so thankful."},
+    {group:'Proud of You', title:'Celebrate You', message:"Let's get it! You did that. Celebrate you today, because you earned it."},
+    {group:'New Beginnings', title:'A Fresh Start', message:"Every day you wake up with new thoughts, so use them. Piece by piece, you're building something beautiful."},
+    {group:'New Beginnings', title:'Let It Go', message:"Let it go, baby. Move on. What's ahead of you is better than what's behind you, and I'll be there cheering you on."},
+    {group:'Family', title:'Grandma Loves You', message:"Grandma loves you so much, baby. You make my heart so happy. I'll be there for you, always."},
+    {group:'Family', title:'Family Is Everything', message:"My brother, my sister, my cousin. Family is everything. I appreciate you, and I'll be there."},
+    {group:'Friendship', title:'You Good Peoples', message:"Girl, you know you my sistah. You good peoples, and I appreciate you. I'll be there, always."},
+    {group:'Friendship', title:"What's Going On?", message:"What's going on? Talk to me about that. I'm here, and I'll be there."},
+    {group:'Thinking of You', title:'Thinking of You', message:"You were on my mind today, baby. I just wanted you to know somebody loves you."},
+    {group:"You're Not Alone", title:"You're Not Alone", message:"Loneliness is part of life. But when you're sad, get around people. A walk in the mall, a funny podcast, dancing by yourself breaks the spell. And call me. I'll be there."},
+    {group:'Just Because', title:'Just Because', message:"No reason. Just because. I appreciate you, baby. Celebrate you."},
+    {group:'Just Because', title:'Stay Humble', message:"Stay humble, keep your energy right, and protect your boundaries. You're doing better than you think."}
   ];
-  quickCards.forEach(card => {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'quick-card';
-    const swatch = document.createElement('span'); swatch.className = `quick-swatch ${card.color}`; swatch.setAttribute('aria-hidden','true');
-    const text = document.createElement('span'); text.className = 'quick-text';
-    const group = document.createElement('small'); group.textContent = card.group;
-    const title = document.createElement('strong'); title.textContent = card.title;
-    text.append(group, title); button.append(swatch, text);
-    button.addEventListener('click', () => {
-      if ((draft.title || draft.message) && !confirm('Use this Quick Card? It replaces the title and message you have now. Your photo stays.')) return;
-      draft.title = card.title; draft.message = card.message; draft.color = card.color;
-      if (!draft.image) draft.artwork = card.artwork;
-      populate(); save(); showStep(4);
+  const suggestions = [
+    {name:'Encouragement', words:"Honey, you got all that experience. There's got to be something in there you can do. Your brain already knows what you need. But first, you have to accept that you need it."},
+    {name:'Proud of You', words:"Let your light shine, baby! Look what you were able to do. I'm so proud of you, and I'm so thankful."},
+    {name:'New Beginnings', words:"We don't fail, we just experience them. Then we look back and decide what to do different. Every day you wake up with new thoughts, so use them."},
+    {name:'Just Because', words:"No reason. Just because. I appreciate you, baby. Celebrate you."},
+    {name:'Thinking of You', words:"You were on my mind today, baby. When you're feeling low, get around people. A walk in the mall, a funny podcast, dancing by yourself breaks the spell."},
+    {name:"You're Not Alone", words:"Loneliness is part of life. But when you're sad, get around people. And call me. I'll be there."},
+    {name:'Gratitude', words:"I appreciate you. Nobody can be mad at your gratitude, so here's mine."},
+    {name:'Family', words:"I was thinking about my family today, and you came right to my heart. I appreciate you, and I'll be there."},
+    {name:'Friendship', words:"What's going on? Talk to me about that. You good peoples, and I'll be there."},
+    {name:'Good News', words:"Let your light shine, baby! Look what you were able to do. I'm so thankful, and I'm celebrating you."}
+  ];
+
+  /* ---------- Draft ---------- */
+  const fresh = () => ({version:3, title:'A note for you', message:'', style:'lotus', image:null, imageName:'', pictureIndex:-1, art:false, ink:'dark', size:'normal', place:'bottom', mama:false, sound:null, soundName:'', soundKind:''});
+  let draft = fresh();
+  let db = null;
+  const MAX_IMAGE = 10 * 1024 * 1024, MAX_SOUND = 15 * 1024 * 1024;
+  const say = (id, text) => { const el = $(id); if (el.textContent !== text) el.textContent = text; };
+
+  function openDatabase() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open('mama-said-card-designer', 2);
+      const timer = setTimeout(() => reject(Error('timeout')), 5000);
+      request.onupgradeneeded = () => {
+        const store = request.result;
+        if (!store.objectStoreNames.contains('drafts')) store.createObjectStore('drafts');
+        if (!store.objectStoreNames.contains('saved')) store.createObjectStore('saved', {keyPath:'id'});
+      };
+      request.onsuccess = () => { clearTimeout(timer); resolve(request.result); };
+      request.onerror = request.onblocked = () => { clearTimeout(timer); reject(Error('unavailable')); };
     });
-    $('quick-card-list').append(button);
+  }
+  const tx = (store, mode, work) => new Promise((resolve, reject) => {
+    const t = db.transaction(store, mode); const result = work(t.objectStore(store));
+    t.oncomplete = () => resolve(result && 'result' in result ? result.result : undefined);
+    t.onerror = t.onabort = () => reject(t.error || Error('failed'));
   });
 
-  function showStep(step) {
-    if (![1,2,3,4].includes(step) || $('card-controls').disabled) return;
-    draft.step = step;
-    renderStep();
-    save();
-    (step === 4 ? finishedCard.querySelector('h2') : $('active-step-heading')).focus();
-    alignDesktopEditor();
-  }
-
-  function render() {
-    $('preview-title-text').textContent = draft.title || 'A note for you';
-    $('preview-message-text').textContent = draft.message || 'Your personal message will appear here.';
-    $('card-preview').className = `card ${draft.color} art-${draft.artwork || 'none'}${draft.image ? ' has-personal-image' : ''}${draft.mama ? ' show-mama' : ''}`;
-    $('preview-image').alt = draft.imageDescription || 'Your personal card image';
-    const autoColor = contrast('#15313F',backgrounds[draft.color]) >= 4.5 ? '#15313F' : contrast('#24131C',backgrounds[draft.color]) >= 4.5 ? '#24131C' : '#FFFCF5';
-    $('card-preview').style.color = autoColor;
-    $('card-preview').style.textAlign = draft.alignment;
-    for (const part of ['title','message']) {
-      const element = $(`preview-${part}`);
-      const color = draft[`${part}TextColor`] === 'auto' ? autoColor : draft[`${part}TextColor`];
-      element.style.fontFamily = fonts[draft[`${part}FontFamily`]];
-      element.style.fontSize = `${draft[`${part}FontSize`]}px`;
-      element.style.color = color;
-      const backing = draft[`${part}TextBacking`];
-      const backingColor = contrast(color,'#000000') > contrast(color,'#FFFFFF') ? '#000000' : '#FFFFFF';
-      const backingText = $(`preview-${part}-text`);
-      backingText.classList.toggle('has-text-backing',backing);
-      backingText.style.backgroundColor = backing ? (backingColor === '#000000' ? 'rgba(0,0,0,.94)' : 'rgba(255,255,255,.94)') : '';
-      const ratio = contrast(color,backing ? composite(backingColor,backgrounds[draft.color],.94) : backgrounds[draft.color]);
-      $(`${part}-contrast-status`).textContent = ratio < 4.5 ? `Low contrast (${ratio.toFixed(2)}:1). Your selected color is kept. Enable ${part} backing or choose a different color.` : backing ? `Translucent backing on (${ratio.toFixed(2)}:1 contrast). Your text color is unchanged.` : '';
+  // Older drafts (the four-step designer) keep their words, picture, and Mama setting.
+  function readStored(value) {
+    if (!value || typeof value !== 'object') return null;
+    const d = fresh();
+    if (typeof value.title === 'string') d.title = value.title.slice(0, 80);
+    if (typeof value.message === 'string') d.message = value.message.slice(0, 500);
+    if (value.image instanceof Blob && value.image.size <= MAX_IMAGE) { d.image = value.image; d.imageName = typeof value.imageName === 'string' ? value.imageName : 'Your picture'; }
+    if (typeof value.mama === 'boolean') d.mama = value.version === 3 ? value.mama : false;
+    if (value.version === 3) {
+      if (styles.some(s => s.id === value.style)) d.style = value.style;
+      if (Number.isInteger(value.pictureIndex)) d.pictureIndex = value.pictureIndex;
+      d.art = !!value.art && !!d.image;
+      if (['dark','light'].includes(value.ink)) d.ink = value.ink;
+      if (['normal','large'].includes(value.size)) d.size = value.size;
+      if (['left','right','bottom'].includes(value.place)) d.place = value.place;
+      if (value.sound instanceof Blob && value.sound.size <= MAX_SOUND) { d.sound = value.sound; d.soundName = String(value.soundName || 'Your sound'); d.soundKind = value.soundKind === 'voice' ? 'voice' : 'music'; }
+    } else {
+      const map = {ocean:'ocean', turquoise:'ocean', plum:'royal', gold:'gold', champagne:'gold', pearl:'pearl', ivory:'ivory', blush:'pearl', rosewood:'gold'};
+      d.style = value.artwork === 'lotus' ? 'lotus' : (map[value.color] || 'lotus');
+      d.ink = styles.find(s => s.id === d.style).ink;
     }
-    $('text-style-status').textContent = 'Colors are kept as selected. Auto changes with paper only when chosen.';
-    verifyFonts();
+    return d;
   }
 
-  function renderImage() {
+  let saveTimer = null, saving = Promise.resolve();
+  function save() {
+    render();
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      if (!db) { say('save-status', 'Your card is on this page only. This browser is not saving drafts.'); return; }
+      const snapshot = {...draft};
+      saving = saving.then(() => tx('drafts', 'readwrite', s => s.put(snapshot, 'current')))
+        .then(() => say('save-status', 'Draft saved in this browser.'))
+        .catch(() => say('save-status', 'Your draft could not be saved in this browser. Keep this page open.'));
+    }, 250);
+  }
+
+  /* ---------- Drawing the card ---------- */
+  let imageURL = null, soundURL = null;
+  function splitTitle(title) {
+    const words = title.trim().split(/\s+/).filter(Boolean);
+    if (words.length < 3) return ['', words.join(' ')];
+    const cut = Math.floor(words.length / 2);
+    return [words.slice(0, cut).join(' '), words.slice(cut).join(' ')];
+  }
+  function render() {
+    const style = styles.find(s => s.id === draft.style) || styles[0];
+    const picture = !!draft.image;
+    const [top, script] = splitTitle(draft.title || 'A note for you');
+    $('card-top').textContent = top;
+    $('card-script').textContent = script;
+    $('card-message-text').textContent = draft.message || 'Your message will appear here, right on the card.';
+    $('card-message-text').classList.toggle('placeholder', !draft.message);
+    card.style.backgroundImage = picture ? `url("${imageURL}")` : style.bg;
+    card.className = ['card', `ink-${draft.ink}`, `size-${draft.size}`, `place-${draft.place}`, !picture && style.full ? 'full-style' : '', picture ? 'has-picture' : '', picture && draft.art ? 'art-card' : ''].join(' ').replace(/\s+/g, ' ').trim();
+    $('card-mama').hidden = !draft.mama;
+    $('card-sound-chip').hidden = !draft.sound;
+    $('show-mama').checked = draft.mama;
+    document.querySelectorAll('.style-tile').forEach(tile => tile.setAttribute('aria-checked', String(!picture && tile.dataset.style === draft.style)));
+    document.querySelectorAll('.picture-tile').forEach(tile => tile.setAttribute('aria-pressed', String(picture && Number(tile.dataset.index) === draft.pictureIndex)));
+    document.querySelectorAll('[data-ink]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.ink === draft.ink)));
+    document.querySelectorAll('[data-size]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.size === draft.size)));
+    document.querySelectorAll('[data-place]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.place === draft.place)));
+    say('title-count', `${draft.title.length}/80`);
+    say('message-count', `${draft.message.length}/500`);
+    say('image-name', draft.image && draft.pictureIndex < 0 ? draft.imageName : 'No file chosen');
+    card.setAttribute('aria-label', `Card preview: ${draft.title || 'A note for you'}. ${draft.message}`);
+    fitWords();
+  }
+  // Long messages get a little smaller so every word stays on the card.
+  function fitWords() {
+    const words = card.querySelector('.card-words'), message = $('card-message-text');
+    message.style.fontSize = '';
+    let size = parseFloat(getComputedStyle(message).fontSize), floor = card.clientWidth * 0.022;
+    while (words.scrollHeight > words.clientHeight + 1 && size > floor) { size -= 0.5; message.style.fontSize = `${size}px`; }
+  }
+  let imageWide = false;
+  // When a new photo goes on the card, pick light or dark words to match the picture where the words sit.
+  function setImageURL(chooseInk = false) {
     if (imageURL) URL.revokeObjectURL(imageURL);
     imageURL = draft.image ? URL.createObjectURL(draft.image) : null;
-    const image = $('preview-image');
-    image.hidden = !imageURL;
-    if (imageURL) image.src = imageURL;
-    else image.removeAttribute('src');
-    $('remove-image').disabled = !draft.image;
-    $('image-status').textContent = draft.image ? `${draft.imageName} is on your card.${$('image-status').dataset.mamaNote ? ' Mama stepped aside for your photo; turn her back on above if you like.' : ''}` : 'No image selected.';
-    delete $('image-status').dataset.mamaNote;
-    render();
+    imageWide = false;
+    if (imageURL) { const probe = new Image(); const url = imageURL; probe.onload = () => {
+      if (url !== imageURL) return;
+      imageWide = probe.naturalWidth / probe.naturalHeight > 8 / 7;
+      if (chooseInk && !draft.art) {
+        try {
+          const c = document.createElement('canvas'); c.width = 40; c.height = 35; const g = c.getContext('2d');
+          g.drawImage(probe, 0, 0, 40, 35);
+          const area = draft.place === 'bottom' ? [0, 22, 40, 13] : draft.place === 'right' ? [20, 0, 20, 35] : [0, 0, 20, 35];
+          const d = g.getImageData(...area).data; let sum = 0;
+          for (let i = 0; i < d.length; i += 4) sum += (0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2]) / 255;
+          draft.ink = sum / (d.length / 4) < 0.58 ? 'light' : 'dark'; save();
+        } catch {}
+      }
+      render(); }; probe.src = url; }
   }
-
+  function setSound() {
+    if (soundURL) URL.revokeObjectURL(soundURL);
+    soundURL = draft.sound ? URL.createObjectURL(draft.sound) : null;
+    $('sound-box').hidden = !draft.sound;
+    if (draft.sound) { $('sound-player').src = soundURL; say('sound-name', `${draft.soundKind === 'voice' ? '🎙 Your voice' : '♪ Your music'}: ${draft.soundName}`); }
+    else $('sound-player').removeAttribute('src');
+  }
   function populate() {
     $('card-title').value = draft.title;
     $('card-message').value = draft.message;
-    $('image-description').value = draft.imageDescription;
-    document.querySelector(`input[name=background][value=${draft.color}]`).checked = true;
-    $('card-image').value = '';
-    document.querySelector(`input[name=artwork][value=${draft.artwork || 'none'}]`).checked = true;
-    for (const part of ['title','message']) {
-      const prefix = part === 'title' ? 'title-' : '';
-      $(`${prefix}font-family`).value = draft[`${part}FontFamily`];
-      $(`${prefix}font-size`).value = String(draft[`${part}FontSize`]);
-      $(`${prefix}text-color`).value = draft[`${part}TextColor`];
-      $(`${part}-text-backing`).checked = draft[`${part}TextBacking`];
-    }
-    $('text-alignment').value = draft.alignment;
-    $('show-mama').checked = draft.mama;
-    finishedCard.querySelector('#toggle-mama-finished').textContent = draft.mama ? 'Remove Mama' : 'Put Mama on Card';
-    renderStep();
-    renderImage();
+    setImageURL(); setSound(); render();
   }
 
-  function readDraft() {
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction('drafts', 'readonly');
-      const request = tx.objectStore('drafts').get('current');
-      tx.oncomplete = () => resolve(request.result);
-      tx.onerror = tx.onabort = () => reject(tx.error || Error('Read failed'));
-    });
-  }
+  /* ---------- Controls ---------- */
+  $('card-title').addEventListener('input', e => { draft.title = e.target.value; save(); });
+  $('card-message').addEventListener('input', e => { draft.message = e.target.value; save(); });
+  $('show-mama').addEventListener('change', e => { draft.mama = e.target.checked; save(); });
+  document.querySelectorAll('[data-ink]').forEach(b => b.addEventListener('click', () => { draft.ink = b.dataset.ink; save(); }));
+  document.querySelectorAll('[data-size]').forEach(b => b.addEventListener('click', () => { draft.size = b.dataset.size; save(); }));
+  document.querySelectorAll('[data-place]').forEach(b => b.addEventListener('click', () => { draft.place = b.dataset.place; if (draft.image && !draft.art) setImageURL(true); save(); }));
 
-  function writeDraft(snapshot) {
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction('drafts', 'readwrite');
-      tx.objectStore('drafts').put(snapshot, 'current');
-      // A request success event alone does not guarantee the transaction committed.
-      tx.oncomplete = resolve;
-      tx.onerror = tx.onabort = () => reject(tx.error || Error('Save failed'));
-    });
-  }
-
-  function save() {
-    render();
-    unsaved = true;
-    const currentRevision = ++revision;
-    const snapshot = { ...draft };
-    if (!db) { status(storageWarning); return; }
-    status('Saving your draft and image in this browser…');
-    pending++;
-    // Serialize whole-draft writes so an older image or text cannot overwrite a newer edit.
-    queue = queue.then(async () => {
-      try {
-        await writeDraft(snapshot);
-        if (currentRevision === revision) {
-          unsaved = false;
-          status(uploading ? 'Preparing your image. Keep this page open until it is saved.' : 'Draft saved in this browser, including your image if selected.');
-        }
-      } catch {
-        if (currentRevision === revision) status(storageWarning);
-      } finally { pending--; }
-    });
-  }
-
-  function validateStored(value) {
-    if (!value || typeof value !== 'object' || typeof value.title !== 'string' || value.title.length > 200 || typeof value.message !== 'string' || value.message.length > 10000 || !colors.includes(value.color) || typeof value.imageName !== 'string' || typeof value.imageDescription !== 'string' || value.imageDescription.length > 300) throw Error('Unreadable draft');
-    if (value.image !== null && (!(value.image instanceof Blob) || value.image.size > 10 * 1024 * 1024 || !['image/jpeg','image/png','image/webp','image/gif'].includes(value.image.type))) throw Error('Unreadable image');
-    if (value.artwork === undefined) value.artwork = 'none';
-    if (value.mama === undefined) value.mama = true;
-    if (typeof value.mama !== 'boolean') throw Error('Unreadable Mama setting');
-    if (!['none', 'lotus'].includes(value.artwork)) throw Error('Unreadable artwork');
-    for (const property of ['step','fontFamily','fontSize','textColor','alignment']) if (value[property] === undefined) value[property] = empty()[property];
-    if (![1,2,3,4].includes(value.step) || !Object.hasOwn(fonts,value.fontFamily) || !messageSizes.includes(value.fontSize) || !textColors.includes(value.textColor) || !['left','center','right'].includes(value.alignment)) throw Error('Unreadable text settings');
-    // Add independent settings without changing text, images, or previous stored records on load.
-    // Old title sizes were message size + 16; preserve that appearance exactly.
-    const previous = {titleFontFamily:value.fontFamily,messageFontFamily:value.fontFamily,titleFontSize:value.fontSize+16,messageFontSize:value.fontSize,titleTextColor:value.textColor,messageTextColor:value.textColor,titleTextBacking:false,messageTextBacking:false};
-    for (const [key,setting] of Object.entries(previous)) if (value[key] === undefined) value[key] = setting;
-    for (const part of ['title','message']) {
-      if (!Object.hasOwn(fonts,value[`${part}FontFamily`]) || !(part==='title'?titleSizes:messageSizes).includes(value[`${part}FontSize`]) || !textColors.includes(value[`${part}TextColor`]) || typeof value[`${part}TextBacking`] !== 'boolean') throw Error('Unreadable independent text settings');
-    }
-    value.typographyVersion = 2;
-    return value;
-  }
-
-  async function initialize() {
-    try {
-      db = await new Promise((resolve, reject) => {
-        const request = indexedDB.open('mama-said-card-designer', 1);
-        let settled = false;
-        const timer = setTimeout(() => { settled = true; reject(Error('Storage timeout')); }, 5000);
-        request.onupgradeneeded = () => request.result.createObjectStore('drafts');
-        request.onsuccess = () => {
-          clearTimeout(timer);
-          if (settled) { request.result.close(); return; }
-          resolve(request.result);
-        };
-        request.onerror = request.onblocked = () => { clearTimeout(timer); settled = true; reject(Error('Storage unavailable')); };
-      });
-      db.onversionchange = () => { db.close(); db = null; status('Browser draft storage changed in another tab. Refresh before editing further.'); };
-      const stored = await readDraft();
-      if (stored !== undefined) {
-        draft = validateStored(stored);
-        status('Your saved card was restored, including your image if selected.');
-      } else status('Ready to create. Your draft will save in this browser as you edit.');
-    } catch {
-      if (db) db.close();
-      db = null;
-      status('A saved draft could not be opened. It has not been overwritten. New edits will stay on this page only; browser storage is unavailable.');
-    } finally {
-      populate();
-      $('card-controls').disabled = false;
-      document.querySelectorAll('[data-step]').forEach(button => {button.disabled = false;});
-      requestAnimationFrame(alignDesktopEditor);
-    }
-  }
-
-  // Private controller: future adapters can reuse validated operations here without a global API.
-  const editorController = Object.freeze({
-    setCardTitle(text) { if (typeof text !== 'string' || text.length > 200) return false; draft.title = text; $('card-title').value = text; save(); return true; },
-    setCardMessage(text) { if (typeof text !== 'string' || text.length > 10000) return false; draft.message = text; $('card-message').value = text; save(); return true; },
-    setCardBackground(color) { if (!colors.includes(color)) return false; draft.color = color; document.querySelector(`input[name=background][value=${color}]`).checked = true; save(); return true; },
-    changeTextColor(color,part='message') { if (!['title','message'].includes(part) || !textColors.includes(color)) return false; draft[`${part}TextColor`] = color; if(part==='message') draft.textColor=color; $(`${part==='title'?'title-':''}text-color`).value = color; save(); return true; },
-    changeFontSize(size,part='message') { if (!['title','message'].includes(part) || !(part==='title'?titleSizes:messageSizes).includes(size)) return false; draft[`${part}FontSize`] = size; if(part==='message') draft.fontSize=size; $(`${part==='title'?'title-':''}font-size`).value = size; save(); return true; },
-    changeFontFamily(font,part='message') { if (!['title','message'].includes(part) || !Object.hasOwn(fonts,font)) return false; draft[`${part}FontFamily`] = font; if(part==='message') draft.fontFamily=font; $(`${part==='title'?'title-':''}font-family`).value = font; save(); return true; },
-    changeTextBacking(enabled,part='message') { if (!['title','message'].includes(part) || typeof enabled!=='boolean') return false; draft[`${part}TextBacking`] = enabled; save(); return true; },
-    changeTextAlignment(alignment) { if (!['left','center','right'].includes(alignment)) return false; draft.alignment = alignment; $('text-alignment').value = alignment; save(); return true; },
-    selectCardTemplate(id) {
-      if (!['lotus','classic'].includes(id)) return false;
-      if (!confirm('Apply this starter layout? Paper and artwork will change. Your title, message, personal image, and font settings will stay.')) return false;
-      draft.artwork = id === 'lotus' ? 'lotus' : 'none';
-      draft.color = id === 'lotus' ? 'pearl' : 'ivory';
-      populate(); save(); return true;
-    }
+  styles.forEach(style => {
+    const tile = document.createElement('button');
+    tile.type = 'button'; tile.className = 'style-tile'; tile.dataset.style = style.id;
+    tile.setAttribute('role', 'radio'); tile.setAttribute('aria-label', style.name); tile.title = style.name;
+    tile.style.backgroundImage = style.bg;
+    tile.addEventListener('click', () => { draft.style = style.id; draft.image = null; draft.imageName = ''; draft.pictureIndex = -1; draft.art = false; draft.ink = style.ink; setImageURL(); save(); });
+    $('style-tiles').append(tile);
   });
-  $('card-title').addEventListener('input',event => editorController.setCardTitle(event.target.value));
-  $('card-message').addEventListener('input',event => editorController.setCardMessage(event.target.value));
-  $('image-description').addEventListener('input',event => {draft.imageDescription = event.target.value;save();});
-  const mamaToggleFinished = finishedCard.querySelector('#toggle-mama-finished');
-  function setMama(on) { draft.mama = on; $('show-mama').checked = on; mamaToggleFinished.textContent = on ? 'Remove Mama' : 'Put Mama on Card'; save(); }
-  $('show-mama').addEventListener('change',event => setMama(event.target.checked));
-  mamaToggleFinished.addEventListener('click',() => setMama(!draft.mama));
-  for (const part of ['title','message']) {
-    const prefix = part==='title'?'title-':'';
-    $(`${prefix}font-family`).addEventListener('change',event => editorController.changeFontFamily(event.target.value,part));
-    $(`${prefix}font-size`).addEventListener('change',event => editorController.changeFontSize(Number(event.target.value),part));
-    $(`${prefix}text-color`).addEventListener('change',event => editorController.changeTextColor(event.target.value,part));
-    $(`${part}-text-backing`).addEventListener('change',event => editorController.changeTextBacking(event.target.checked,part));
-  }
-  $('text-alignment').addEventListener('change',event => editorController.changeTextAlignment(event.target.value));
-  document.querySelectorAll('[data-template]').forEach(button => button.addEventListener('click',()=>editorController.selectCardTemplate(button.dataset.template)));
-  document.querySelectorAll('[data-step]').forEach(button => button.addEventListener('click',()=>showStep(Number(button.dataset.step))));
-  $('next-step').addEventListener('click',()=>showStep(draft.step+1));
-  $('previous-step').addEventListener('click',()=>showStep(draft.step-1));
-  finishedCard.querySelector('#edit-finished-card').addEventListener('click',()=>showStep(3));
-  document.querySelectorAll('input[name=background]').forEach(input => input.addEventListener('change', () => editorController.setCardBackground(input.value)));
-  document.querySelectorAll('input[name=artwork]').forEach(input => input.addEventListener('change', () => { draft.artwork = input.value; save(); }));
 
-  $('card-image').addEventListener('change', async event => {
-    const file = event.target.files[0];
+  function pictureButton(picture, index) {
+    const button = document.createElement('button');
+    button.type = 'button'; button.className = 'picture-tile'; button.dataset.index = index;
+    button.setAttribute('aria-label', `Use the ${picture.name} picture`);
+    const img = document.createElement('img'); img.src = `assets/cards/${picture.file}.jpg`; img.alt = ''; img.loading = 'lazy';
+    const label = document.createElement('span'); label.textContent = picture.name;
+    button.append(img, label);
+    button.addEventListener('click', () => usePicture(index));
+    return button;
+  }
+  let pictureVersion = 0;
+  async function usePicture(index, quiet = false) {
+    const picture = cardPictures[(index + cardPictures.length) % cardPictures.length];
+    index = cardPictures.indexOf(picture);
+    const version = ++pictureVersion;
+    try {
+      const response = await fetch(`assets/cards/${picture.file}.jpg`);
+      if (!response.ok) throw Error('missing');
+      const blob = await response.blob();
+      if (version !== pictureVersion) return;
+      draft.image = new Blob([blob], {type:'image/jpeg'}); draft.imageName = picture.name; draft.pictureIndex = index; draft.art = picture.art; draft.ink = 'dark';
+      setImageURL(true); save();
+      if (!quiet) say('card-status', `${picture.name} is on your card.`);
+    } catch { if (!quiet) say('card-status', 'That picture could not load. Please try again.'); }
+  }
+  cardPictures.slice(0, 6).forEach((picture, index) => $('picture-grid').append(pictureButton(picture, index)));
+  $('previous-picture').addEventListener('click', () => usePicture(draft.pictureIndex < 0 ? cardPictures.length - 1 : draft.pictureIndex - 1));
+  $('next-picture').addEventListener('click', () => usePicture(draft.pictureIndex < 0 ? 0 : draft.pictureIndex + 1));
+
+  $('card-image').addEventListener('change', async e => {
+    const file = e.target.files[0]; e.target.value = '';
     if (!file) return;
-    const version = ++uploadVersion;
-    if (!['image/jpeg','image/png','image/webp','image/gif'].includes(file.type) || file.size > 10 * 1024 * 1024) {
-      uploading = false;
-      $('image-status').textContent = 'Please choose a JPEG, PNG, WebP, or GIF of 10 MB or less. Your existing image is unchanged.';
-      status(pending ? 'Saving your current card in this browser…' : unsaved ? storageWarning : 'Image was not added. Your previous card is unchanged.');
-      event.target.value = '';
-      return;
-    }
-    uploading = true;
-    $('image-status').textContent = 'Checking your image…';
-    status('Preparing your image. Keep this page open until it is saved.');
+    if (!['image/jpeg','image/png','image/webp','image/gif'].includes(file.type) || file.size > MAX_IMAGE) { say('card-status', 'Please choose a JPEG, PNG, WebP, or GIF picture of 10 MB or less.'); return; }
     const url = URL.createObjectURL(file);
     try {
-      const image = new Image();
-      image.src = url;
-      await image.decode();
-      if (version !== uploadVersion) return;
-      draft.image = file;
-      draft.imageName = file.name;
-      // A personal photo takes Mama's place; she can be turned back on in Design.
-      if (draft.mama) { draft.mama = false; $('show-mama').checked = false; finishedCard.querySelector('#toggle-mama-finished').textContent = 'Put Mama on Card'; $('image-status').dataset.mamaNote = '1'; }
-      uploading = false;
-      renderImage();
-      save();
-    } catch {
-      if (version === uploadVersion) {
-        uploading = false;
-        $('image-status').textContent = 'This image could not be read. Please choose another. Your existing image is unchanged.';
-        status(unsaved ? storageWarning : 'Image was not added. Your previous card is unchanged.');
-      }
-    } finally { URL.revokeObjectURL(url); event.target.value = ''; }
+      const img = new Image(); img.src = url; await img.decode();
+      pictureVersion++;
+      draft.image = file; draft.imageName = file.name; draft.pictureIndex = -1; draft.art = false;
+      setImageURL(true); save(); say('card-status', 'Your picture is on your card.');
+    } catch { say('card-status', 'That picture could not be read. Please choose another.'); }
+    finally { URL.revokeObjectURL(url); }
   });
 
-  // Mama Said picture library (assets/cards). A chosen picture is stored like a personal photo.
-  const cardPictures = [
-    {file:'family-smiles', name:'Family smiles', description:'A smiling father with his two daughters'},
-    {file:'sunset-family', name:'Sunset family', description:'A family sitting together by the water at sunset'},
-    {file:'candlelight-couple', name:'Candlelight couple', description:'A couple smiling at each other by candlelight'},
-    {file:'candlelit-table', name:'Candlelit table', description:'A dinner table set with candles and greenery'},
-    {file:'cookout', name:'Cookout', description:'Barbecue ribs with potatoes and fries at a cookout'},
-    {file:'grandparents-couch', name:'Grandparents', description:'Grandparents sitting on a couch with their grandson'},
-    {file:'three-generations', name:'Three generations', description:'A great-grandmother, grandmother, and granddaughter smiling together'},
-    {file:'comfort-embrace', name:'Comfort', description:'A couple holding each other close in an autumn forest'},
-    {file:'white-lilies', name:'White lilies', description:'Soft white lilies in gentle light'},
-    {file:'peaceful-beach', name:'Peaceful beach', description:'Calm turquoise waves on a quiet sandy beach'},
-    {file:'cozy-fireplace', name:'Cozy fireplace', description:'A warm fireplace in a cozy wood-paneled room'},
-    {file:'cozy-couch', name:'Cozy couch', description:'A cozy couch with warm tea by the window'},
-    {file:'sunny-living-room', name:'Sunny living room', description:'A sunny living room with plants and a cup of tea'},
-    {file:'garden-retreat', name:'Garden retreat', description:'A peaceful glass house in a misty garden'},
-    {file:'candle-branch', name:'Candle and branch', description:'A glowing candle and a branch in a vase'},
-    {file:'candle-window', name:'Candle by the window', description:'A candle and a vase in soft window light'},
-    {file:'bride-roses', name:'Bride in roses', description:'A Black bride in a long veil among white roses'},
-    {file:'bride-garden', name:'Bride in the garden', description:'A bride in a long veil in a sunlit garden'},
-    {file:'flower-arch', name:'White flower arch', description:'A white flower arch in a garden'},
-    {file:'wedding-cake', name:'Wedding cake', description:'A white tiered wedding cake with roses'},
-    {file:'candlelit-canopy', name:'Candlelit canopy', description:'A candlelit dinner table under a flower canopy'},
-    {file:'garden-party-lights', name:'Garden party', description:'An outdoor celebration under glowing lanterns'},
-    {file:'golden-hour-beauty', name:'Golden hour beauty', description:'A smiling Black woman with an afro and gold hoops'},
-    {file:'golden-mermaid', name:'Golden mermaid', description:'A Black grandmother mermaid with golden locs and a golden tail'},
-    {file:'silver-mermaid', name:'Silver mermaid', description:'A Black grandmother mermaid with silver locs and a blue tail'},
-    {file:'space-queen', name:'Space queen', description:'A smiling Black woman with an afro in a golden space suit'},
-    {file:'cuddle-candlelight', name:'Cuddle by candlelight', description:'A couple cuddled up by warm candlelight'},
-    {file:'flowers-for-you', name:'Flowers for you', description:'A smiling couple with a bouquet of flowers'},
-    {file:'i-love-you-roses', name:'I love you roses', description:'"I love you with all my heart" framed in pink roses'},
-    {file:'wildflower-path', name:'Wildflower path', description:'A sunlit path through a meadow of daisies'},
-    {file:'happy-friends', name:'Happy friends', description:'Colorful smiling friends jumping for joy'},
-    {file:'jelly-buddies', name:'Jelly buddies', description:'Cheerful jelly-bean friends dancing'},
-    {file:'just-checking-in', name:'Just checking in', description:'A smiling man by a river with the words Just Checking In'},
-    {file:'grandma-tea-window', name:'Grandma with tea', description:'A grandmother with a warm cup of tea by a snowy window'},
-    {file:'tea-with-friends', name:'Tea with friends', description:'Two friends laughing over tea with a smiling mug'},
-    {file:'warm-tea-hands', name:'Warm tea', description:'Hands holding a warm cup of tea in a cozy sweater'},
-    {file:'held-in-comfort', name:'Held in comfort', description:'A woman being held and comforted in a heavenly light'},
-    {file:'helping-hand', name:'Helping hand', description:'A glowing hand lifting a smiling woman to safety'},
-    {file:'royal-blue-couple', name:'Royal blue couple', description:'A smiling couple in royal blue holding hands at a celebration'},
-    {file:'elegant-evening', name:'Elegant evening', description:'A smiling couple in black holding hands under golden lights'},
-    {file:'glowing-rose', name:'Glowing rose', description:'A glowing rose surrounded by soft hearts'},
-    {file:'golden-goddess', name:'Golden goddess', description:'A smiling woman with long braids in white and gold jewels'},
-    {file:'royal-couple', name:'Royal couple', description:'A king and queen in blue and gold crowns among blue and white flowers'},
-    {file:'golden-years-love', name:'Golden years love', description:'An older couple holding hands and smiling together'},
-    {file:'slow-dance', name:'Slow dance', description:'A couple slow dancing by a record player'},
-    {file:'sunset-embrace', name:'Sunset embrace', description:'A couple embracing in a flower field at sunset'},
-    {file:'paris-evening', name:'Paris evening', description:'A couple embracing on a balcony with the Eiffel Tower'},
-    {file:'lantern-walk', name:'Lantern walk', description:'A couple walking hand in hand down a path of lights'},
-    {file:'golden-field-walk', name:'Golden field walk', description:'A couple walking together into a golden field'},
-    {file:'starry-camp', name:'Starry campout', description:'A couple wrapped in a blanket by a glowing tent under the stars'},
-    {file:'candlelit-bath', name:'Candlelit bath', description:'A couple relaxing in a candlelit bubble bath'},
-    {file:'doves-birdbath', name:'Doves in love', description:'Two white doves kissing on a birdbath with roses'},
-    {file:'doves-branch', name:'Doves on a branch', description:'Two white doves touching beaks on a branch'},
-    {file:'doves-lantern', name:'Doves by lantern', description:'Two white doves by a glowing lantern and roses'},
-    {file:'red-roses', name:'Red roses', description:'A bouquet of red roses in warm light'},
-    {file:'ring-box', name:'Ring box', description:'A sparkling ring in a soft velvet box'},
-    {file:'two-mugs', name:'Two mugs', description:'Two warm mugs side by side in morning light'},
-    {file:'porch-rockers', name:'Porch rockers', description:'Two rocking chairs on a porch at sunset'},
-    {file:'sistas-laughing', name:'Sistas laughing', description:'Two women hugging and laughing together'},
-    {file:'morning-park', name:'Morning park', description:'A mother and child by the water at sunrise'},
-    {file:'golden-afro-combs', name:'Golden afro combs', description:'Three golden afro combs under a starry night sky'},
-    {file:'golden-bloom', name:'Golden bloom', description:'A glowing golden flower of light'},
-    {file:'jeweled-mandala', name:'Jeweled mandala', description:'A jeweled blue and gold mandala'},
-    {file:'starry-night', name:'Starry night', description:'A starry night sky with a crescent moon'},
-    {file:'football-field', name:'Football field', description:'A football field under stadium lights'},
-    {file:'stadium-lights', name:'Stadium lights', description:'A football stadium glowing at night'},
-    {file:'baseball-diamond', name:'Baseball diamond', description:'A sunny baseball diamond surrounded by trees'},
-    {file:'ballpark-grass', name:'Ballpark', description:'Fresh ballpark grass and the baseline on a sunny day'},
-    {file:'basketball-sunset', name:'Basketball sunset', description:'A basketball hoop glowing at sunset'},
-    {file:'neighborhood-court', name:'Neighborhood court', description:'A neighborhood basketball court in golden light'},
-    {file:'star-gold', name:'Gold star', description:'A glowing gold star burst'},
-    {file:'star-silver', name:'Silver star', description:'A glowing silver star burst'},
-    {file:'star-pink', name:'Pink star', description:'A glowing pink star burst'},
-    {file:'star-soft-pink', name:'Soft pink star', description:'A soft light pink star burst'},
-    {file:'star-red', name:'Red star', description:'A glowing red star burst'},
-    {file:'star-purple', name:'Purple star', description:'A glowing purple star burst'},
-    {file:'star-blue', name:'Blue star', description:'A glowing blue star burst'},
-    {file:'star-sky-blue', name:'Sky blue star', description:'A soft light blue star burst'},
-    {file:'star-green', name:'Green star', description:'A glowing green star burst'}
-  ];
-  cardPictures.forEach(picture => {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'card-picture';
-    button.setAttribute('aria-label', `Use the ${picture.name} picture`);
-    const thumb = document.createElement('img');
-    thumb.src = `assets/cards/${picture.file}.jpg`; thumb.alt = ''; thumb.loading = 'lazy';
-    const label = document.createElement('span'); label.textContent = picture.name;
-    button.append(thumb, label);
-    button.addEventListener('click', async () => {
-      const version = ++uploadVersion;
-      $('card-picture-status').textContent = 'Putting the picture on your card…';
-      try {
-        const response = await fetch(`assets/cards/${picture.file}.jpg`);
-        if (!response.ok) throw Error('missing');
-        const blob = await response.blob();
-        if (version !== uploadVersion) return;
-        draft.image = new Blob([blob], {type:'image/jpeg'});
-        draft.imageName = picture.name;
-        draft.imageDescription = picture.description;
-        $('image-description').value = picture.description;
-        if (draft.mama) { draft.mama = false; $('show-mama').checked = false; finishedCard.querySelector('#toggle-mama-finished').textContent = 'Put Mama on Card'; }
-        renderImage(); save();
-        $('card-picture-status').textContent = `${picture.name} is on your card. Mama stepped aside; turn her back on above if you like.`;
-      } catch { $('card-picture-status').textContent = 'That picture could not load. Please try again.'; }
-    });
-    $('card-picture-list').append(button);
+  /* ---------- Sound: their own music or their own voice ---------- */
+  $('card-sound').addEventListener('change', e => {
+    const file = e.target.files[0]; e.target.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('audio/') || file.size > MAX_SOUND) { say('sound-status', 'Please choose a music or sound file of 15 MB or less.'); return; }
+    draft.sound = file; draft.soundName = file.name; draft.soundKind = 'music';
+    setSound(); save(); say('sound-status', 'Your music is on your card.');
   });
-
-  $('remove-image').addEventListener('click', () => {
-    uploadVersion++;
-    uploading = false;
-    draft.image = null;
-    draft.imageName = '';
-    draft.imageDescription = '';
-    $('image-description').value = '';
-    $('card-image').value = '';
-    renderImage();
-    save();
-  });
-
-  const closeHelp = () => {
-    $('mama-help').hidden = true;
-    $('help-button').setAttribute('aria-expanded', 'false');
-    $('help-button').focus();
-  };
-  $('help-button').addEventListener('click', () => {
-    if (draft.step === 4) showStep(3);
-    if (!$('mama-help').hidden) { closeHelp(); return; }
-    $('mama-help').hidden = false;
-    $('help-button').setAttribute('aria-expanded', 'true');
-    $('help-title').focus({ preventScroll: true });
-    $('mama-help').scrollIntoView({ block: 'nearest' });
-  });
-  $('close-help').addEventListener('click', closeHelp);
-  $('help-assist-button').addEventListener('click', () => { if ($('mama-help').hidden) $('help-button').click(); else $('help-title').focus(); });
-  $('return-from-help').addEventListener('click', () => {
-    closeHelp();
-    (draft.step === 1 || draft.step === 3 ? $('card-message') : $('active-step-heading')).focus();
-  });
-  $('mama-help').addEventListener('keydown', event => { if (event.key === 'Escape') { event.preventDefault(); closeHelp(); } });
-
-  let sayings = null;
-  let sayingsMetadata = [];
-  let loadingSayings = false;
-  function displaySayings() {
-    const query = $('sayings-search').value.toLocaleLowerCase();
-    const matches = sayings.map((text, index) => ({ text, index })).filter(entry => `${entry.index+1} ${entry.text} ${sayingsMetadata[entry.index]?.spellingNote || ''}`.toLocaleLowerCase().includes(query));
-    const fragment = document.createDocumentFragment();
-    for (const { text, index } of matches) {
-      const item = document.createElement('li');
-      const expression = document.createElement('p');
-      const number = document.createElement('span');
-      number.className = 'saying-number';
-      number.textContent = `${index+1}.`;
-      expression.id = `saying-${index}`;
-      expression.className = 'saying-text';
-      expression.textContent = text;
-      const add = document.createElement('button');
-      add.type = 'button';
-      add.textContent = 'Add to Card';
-      add.setAttribute('aria-describedby', expression.id);
-      add.addEventListener('click', () => {
-        const next = draft.message + (draft.message ? '\n\n' : '') + text;
-        if (next.length > $('card-message').maxLength) {
-          $('sayings-add-status').textContent = 'Your message is too long to add this saying. Shorten the message first; your card is unchanged.';
-          return;
-        }
-        editorController.setCardMessage(next);
-        $('sayings-add-status').textContent = `Added expression ${index + 1} to your message. You can edit or remove it in Personal message.`;
-      });
-      item.append(number, expression);
-      const note = sayingsMetadata[index]?.spellingNote;
-      if (note) {
-        const metadata = document.createElement('p');
-        metadata.className = 'spelling-note';
-        metadata.textContent = `Note: ${note}`;
-        metadata.id = `saying-note-${index}`;
-        item.append(metadata);
-        add.setAttribute('aria-describedby', `${expression.id} ${metadata.id}`);
-      }
-      item.append(add);
-      fragment.append(item);
-    }
-    $('sayings-results').replaceChildren(fragment);
-    $('sayings-status').textContent = matches.length ? `${matches.length} of ${sayings.length} sayings shown.` : 'No sayings match your search. Try different words.';
-  }
-
-  async function loadSayings() {
-    if (sayings) { displaySayings(); return; }
-    if (loadingSayings) return;
-    loadingSayings = true;
-    $('sayings-status').textContent = 'Opening the sayings collection…';
+  let recorder = null, recordTimer = null;
+  $('record-voice').addEventListener('click', async () => {
+    const button = $('record-voice');
+    if (recorder && recorder.state === 'recording') { recorder.stop(); return; }
+    if (!window.MediaRecorder || !navigator.mediaDevices) { say('sound-status', 'This browser cannot record. Try Chrome or Safari, or upload a sound instead.'); return; }
     try {
-      const response = await fetch('sayings.json', { cache: 'no-cache', signal: AbortSignal.timeout(10000) });
-      if (!response.ok) throw Error('Collection unavailable');
-      const collection = await response.json();
-      if (collection.sourceStatus === 'missing') {
-        $('sayings-status').textContent = 'The original collection of 99 sayings has not been supplied yet. No replacement sayings have been added. Your card is unchanged.';
-        return;
-      }
-      if (!Array.isArray(collection.sayings) || collection.sayings.length !== 99 || !collection.sayings.every(text => typeof text === 'string' && text.length > 0)) throw Error('Incomplete collection');
-      // Preserve the original text, ordering, duplicates, spellings, and variants.
-      if (collection.metadata !== undefined && (!Array.isArray(collection.metadata) || collection.metadata.length !== 99 || !collection.metadata.every((entry,index)=>entry.number===index+1 && (entry.spellingNote===undefined || typeof entry.spellingNote==='string')))) throw Error('Invalid collection metadata');
-      sayings = collection.sayings;
-      sayingsMetadata = collection.metadata || [];
-      $('sayings-search').disabled = false;
-      displaySayings();
-    } catch {
-      $('sayings-status').textContent = 'The complete original collection could not be loaded. Close and reopen this panel to retry. Your card is unchanged.';
-    } finally { loadingSayings = false; }
-  }
-
-  const closeSayings = (resumeEditing = false) => {
-    $('mama-sayings').hidden = true;
-    $('sayings-button').setAttribute('aria-expanded', 'false');
-    (resumeEditing ? $('card-message') : $('sayings-button')).focus();
-  };
-  $('sayings-button').addEventListener('click', () => {
-    if (!$('mama-sayings').hidden) { closeSayings(); return; }
-    $('mama-sayings').hidden = false;
-    $('sayings-button').setAttribute('aria-expanded', 'true');
-    $('sayings-title').focus();
-    loadSayings();
+      const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+      const type = ['audio/webm;codecs=opus','audio/mp4','audio/webm'].find(t => MediaRecorder.isTypeSupported(t)) || '';
+      const chunks = [];
+      recorder = new MediaRecorder(stream, type ? {mimeType:type} : undefined);
+      recorder.ondataavailable = ev => { if (ev.data.size) chunks.push(ev.data); };
+      recorder.onstop = () => {
+        clearInterval(recordTimer); stream.getTracks().forEach(t => t.stop());
+        button.classList.remove('recording'); button.textContent = '● Record My Voice';
+        const blob = new Blob(chunks, {type: recorder.mimeType || 'audio/webm'});
+        if (!blob.size) { say('sound-status', 'Nothing was recorded. Please try again.'); return; }
+        const ext = blob.type.includes('mp4') ? 'm4a' : 'webm';
+        draft.sound = blob; draft.soundName = `my-voice.${ext}`; draft.soundKind = 'voice';
+        setSound(); save(); say('sound-status', 'Your voice is on your card. Press play to listen.');
+      };
+      recorder.start();
+      let seconds = 0;
+      button.classList.add('recording'); button.textContent = '■ Stop Recording';
+      say('sound-status', 'Recording… speak from your heart. Tap Stop Recording when you are done.');
+      recordTimer = setInterval(() => { seconds++; say('sound-status', `Recording… ${seconds} seconds. Tap Stop Recording when you are done.`); if (seconds >= 120) recorder.stop(); }, 1000);
+    } catch { say('sound-status', 'Please allow the microphone to record your voice, then try again.'); }
   });
-  $('sayings-assist-button').addEventListener('click', () => { if ($('mama-sayings').hidden) $('sayings-button').click(); else $('sayings-title').focus(); });
-  $('close-sayings').addEventListener('click', () => closeSayings());
-  let chosenWords = '';
-  document.querySelectorAll('[data-prompt]').forEach(button => button.addEventListener('click', () => {
-    $('inspiration-prompt').textContent = button.dataset.prompt;
-    chosenWords = button.dataset.words || '';
-    $('inspiration-words').textContent = chosenWords;
-    $('inspiration-offer').hidden = !chosenWords;
-    $('inspiration-add-status').textContent = '';
-    document.querySelectorAll('[data-prompt]').forEach(choice => choice.setAttribute('aria-pressed', String(choice === button)));
-  }));
-  $('add-inspiration').addEventListener('click', () => {
-    if (!chosenWords) return;
-    const next = draft.message + (draft.message ? '\n\n' : '') + chosenWords;
-    if (next.length > $('card-message').maxLength) { $('inspiration-add-status').textContent = 'Your message is too long to add these words. Shorten it first; your card is unchanged.'; return; }
-    editorController.setCardMessage(next);
-    $('inspiration-add-status').textContent = 'Added to your card. You can change the words in Your message.';
-  });
-  $('return-from-sayings').addEventListener('click', () => closeSayings(true));
-  $('sayings-search').addEventListener('input', displaySayings);
-  $('mama-sayings').addEventListener('keydown', event => { if (event.key === 'Escape') { event.preventDefault(); closeSayings(); } });
-
-  function startOver() {
-    if (!window.confirm('Start over? This clears your card title, message, color choice, and image. This cannot be undone.')) return;
-    restoreEditingWorkspace();
-    uploadVersion++;
-    uploading = false;
-    draft = empty();
-    populate();
-    save();
-    $('card-title').focus();
+  $('remove-sound').addEventListener('click', () => { draft.sound = null; draft.soundName = ''; draft.soundKind = ''; setSound(); save(); say('sound-status', 'Sound removed.'); });
+  const fileName = (suffix = '') => ((draft.title.trim() || 'mama-said-card').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase() || 'mama-said-card') + suffix;
+  function downloadBlob(blob, name) {
+    const link = document.createElement('a'); link.download = name; link.href = URL.createObjectURL(blob);
+    document.body.append(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(link.href), 4000);
   }
-  $('start-over').addEventListener('click',startOver);
-  finishedCard.querySelector('#restart-finished-card').addEventListener('click',startOver);
+  const soundFile = () => draft.sound ? new File([draft.sound], `${fileName(draft.soundKind === 'voice' ? '-my-voice' : '-music')}.${(draft.soundName.split('.').pop() || 'mp3').toLowerCase()}`, {type: draft.sound.type || 'audio/mpeg'}) : null;
+  $('save-sound').addEventListener('click', () => { const file = soundFile(); if (file) { downloadBlob(file, file.name); say('sound-status', 'Your sound was saved. Look in your Downloads folder.'); } });
 
-  // Download the finished card as a PNG picture. The drawing library loads only when needed.
-  let pictureLibrary = null;
-  function loadPictureLibrary() {
-    if (window.html2canvas) return Promise.resolve();
-    if (!pictureLibrary) pictureLibrary = new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = 'assets/html2canvas.min.js';
-      script.onload = resolve;
-      script.onerror = () => { pictureLibrary = null; reject(Error('Library unavailable')); };
-      document.head.append(script);
+  /* ---------- Mama's Suggestions ---------- */
+  let chosen = '';
+  suggestions.forEach(s => {
+    const button = document.createElement('button');
+    button.type = 'button'; button.className = 'suggestion'; button.textContent = s.name; button.setAttribute('aria-pressed', 'false');
+    button.addEventListener('click', () => offer(s, button));
+    $('suggestion-list').append(button);
+  });
+  function offer(s, button) {
+    chosen = s.words; $('suggestion-words').textContent = s.words; $('suggestion-offer').hidden = false;
+    document.querySelectorAll('.suggestion').forEach(b => b.setAttribute('aria-pressed', String(b === button)));
+  }
+  function addWords(words, where = 'card-status') {
+    const next = draft.message + (draft.message ? '\n\n' : '') + words;
+    if (next.length > 500) { say(where, 'Your message is full. Shorten it first, then add more.'); return false; }
+    draft.message = next; $('card-message').value = next; save(); say(where, 'Added to your card. You can change any word.');
+    return true;
+  }
+  $('add-suggestion').addEventListener('click', () => { if (chosen) addWords(chosen); });
+  $('get-inspiration').addEventListener('click', () => {
+    const buttons = [...document.querySelectorAll('.suggestion')];
+    const pick = Math.floor(Math.random() * suggestions.length);
+    offer(suggestions[pick], buttons[pick]);
+    $('suggestion-offer').scrollIntoView({block:'nearest', behavior:'smooth'});
+  });
+
+  /* ---------- Drawers: Sayings, Occasions, Pictures, My Cards, Search ---------- */
+  const drawer = $('drawer');
+  let sayings = null, sayingsMeta = [];
+  async function loadSayings() {
+    if (sayings) return sayings;
+    const response = await fetch('sayings.json', {cache:'no-cache'});
+    const data = await response.json();
+    if (!Array.isArray(data.sayings) || data.sayings.length !== 99) throw Error('incomplete');
+    sayings = data.sayings; sayingsMeta = Array.isArray(data.metadata) ? data.metadata : [];
+    return sayings;
+  }
+  function item(html) { const li = document.createElement('li'); li.className = 'drawer-item'; li.innerHTML = html; return li; }
+  const esc = text => text.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function sayingItem(text, index) {
+    const note = sayingsMeta[index]?.spellingNote;
+    const li = item(`<small>Saying ${index + 1}${note ? ` · Note: ${esc(note)}` : ''}</small><p>${esc(text)}</p><button type="button" class="primary">Add to Card</button><span class="status" role="status"></span>`);
+    li.querySelector('button').addEventListener('click', () => { const ok = addWords(text, 'card-status'); li.querySelector('.status').textContent = ok ? 'Added to your card.' : 'Your message is full.'; });
+    return li;
+  }
+  function quickItem(q) {
+    const li = item(`<small>${esc(q.group)}</small><h3>${esc(q.title)}</h3><p>${esc(q.message)}</p><button type="button" class="primary">Use This Card</button>`);
+    li.querySelector('button').addEventListener('click', () => {
+      if ((draft.message || (draft.title && draft.title !== 'A note for you')) && !confirm('Use this card? It replaces your title and message. Your picture stays.')) return;
+      draft.title = q.title; draft.message = q.message; populate(); save(); closeDrawer(); say('card-status', `"${q.title}" is on your card.`);
     });
-    return pictureLibrary;
+    return li;
   }
-  // Mama reads the card out loud. Audio is kept for the same words so replaying costs nothing extra.
-  const voiceStatus = finishedCard.querySelector('#voice-status');
-  const hearButton = finishedCard.querySelector('#hear-mama');
-  const saveVoiceButton = finishedCard.querySelector('#download-voice');
-  let voiceCache = { text: '', blob: null };
-  let player = null;
+  const views = {
+    async sayings(body) {
+      body.innerHTML = '<label for="sayings-search">Search Mama\'s Sayings</label><input id="sayings-search" type="search" autocomplete="off"><p class="status" id="sayings-count" role="status"></p><ul class="drawer-list" id="sayings-list"></ul>';
+      try {
+        await loadSayings();
+        const show = () => {
+          const q = $('sayings-search').value.toLowerCase();
+          const list = $('sayings-list'); list.replaceChildren();
+          sayings.forEach((text, i) => { if (`${i + 1} ${text}`.toLowerCase().includes(q)) list.append(sayingItem(text, i)); });
+          $('sayings-count').textContent = `${list.children.length} of 99 sayings`;
+        };
+        $('sayings-search').addEventListener('input', show); show();
+      } catch { body.innerHTML = '<p class="empty-note">Mama\'s Sayings could not open just now. Please close and try again.</p>'; }
+      return "Mama's Sayings";
+    },
+    occasions(body) {
+      const list = document.createElement('ul'); list.className = 'drawer-list';
+      let group = '';
+      quickCards.forEach(q => { if (q.group !== group) { group = q.group; const h = document.createElement('li'); h.className = 'drawer-group'; h.textContent = group; list.append(h); } list.append(quickItem(q)); });
+      body.replaceChildren(list);
+      return 'Occasions';
+    },
+    pictures(body) {
+      const grid = document.createElement('div'); grid.className = 'picture-grid';
+      cardPictures.forEach((p, i) => { const b = pictureButton(p, i); b.addEventListener('click', closeDrawer); grid.append(b); });
+      body.replaceChildren(grid); render();
+      return `Card Pictures (${cardPictures.length})`;
+    },
+    async 'my-cards'(body) {
+      if (!db) { body.innerHTML = '<p class="empty-note">This browser is not saving cards, so My Cards is empty.</p>'; return 'My Cards'; }
+      const cards = (await tx('saved', 'readonly', s => s.getAll())).sort((a, b) => b.savedAt - a.savedAt);
+      if (!cards.length) { body.innerHTML = '<p class="empty-note">No saved cards yet. Tap "Save to My Cards" under your card to keep it here.</p>'; return 'My Cards'; }
+      const list = document.createElement('ul'); list.className = 'drawer-list';
+      cards.forEach(saved => {
+        const li = item(`<div class="saved-card"><span class="thumb"></span><div><h3>${esc(saved.draft.title || 'A note for you')}</h3><small>Saved ${new Date(saved.savedAt).toLocaleDateString()}</small><div class="actions"><button type="button" class="primary">Open</button><button type="button" class="outline">Delete</button></div></div></div>`);
+        const thumb = li.querySelector('.thumb');
+        if (saved.draft.image) { const u = URL.createObjectURL(saved.draft.image); thumb.style.backgroundImage = `url("${u}")`; }
+        else thumb.style.backgroundImage = (styles.find(s => s.id === saved.draft.style) || styles[0]).bg;
+        const [open, remove] = li.querySelectorAll('button');
+        open.addEventListener('click', () => { draft = readStored(saved.draft) || fresh(); populate(); save(); closeDrawer(); say('card-status', `"${draft.title}" is open.`); });
+        remove.addEventListener('click', async () => { if (!confirm('Delete this saved card? This cannot be undone.')) return; await tx('saved', 'readwrite', s => s.delete(saved.id)); li.remove(); });
+        list.append(li);
+      });
+      body.replaceChildren(list);
+      return 'My Cards';
+    },
+    async search(body, query) {
+      const q = query.trim().toLowerCase();
+      const list = document.createElement('ul'); list.className = 'drawer-list';
+      const heading = text => { const h = document.createElement('li'); h.className = 'drawer-group'; h.textContent = text; list.append(h); };
+      const occ = quickCards.filter(c => `${c.group} ${c.title} ${c.message}`.toLowerCase().includes(q));
+      if (occ.length) { heading('Occasions'); occ.forEach(c => list.append(quickItem(c))); }
+      const pics = cardPictures.map((p, i) => [p, i]).filter(([p]) => p.name.toLowerCase().includes(q));
+      if (pics.length) { heading('Pictures'); const grid = document.createElement('li'); grid.className = 'picture-grid'; pics.forEach(([p, i]) => { const b = pictureButton(p, i); b.addEventListener('click', closeDrawer); grid.append(b); }); list.append(grid); }
+      try { await loadSayings(); const found = sayings.map((t, i) => [t, i]).filter(([t]) => t.toLowerCase().includes(q)); if (found.length) { heading("Mama's Sayings"); found.forEach(([t, i]) => list.append(sayingItem(t, i))); } } catch {}
+      if (!list.children.length) body.innerHTML = '<p class="empty-note">Nothing matched. Try other words, like "family" or "proud".</p>';
+      else { body.replaceChildren(list); render(); }
+      return `Search: "${query.trim()}"`;
+    }
+  };
+  let lastOpener = null;
+  async function openDrawer(name, arg, opener) {
+    lastOpener = opener || document.activeElement;
+    const body = $('drawer-body'); body.replaceChildren();
+    $('drawer-title').textContent = 'Opening…';
+    if (!drawer.open) drawer.showModal();
+    $('drawer-title').textContent = await views[name](body, arg);
+    (body.querySelector('input') || $('close-drawer')).focus();
+  }
+  function closeDrawer() { if (drawer.open) drawer.close(); }
+  drawer.addEventListener('close', () => { if (lastOpener && lastOpener.focus) lastOpener.focus(); });
+  drawer.addEventListener('click', e => { if (e.target === drawer) closeDrawer(); });
+  $('close-drawer').addEventListener('click', closeDrawer);
+  document.querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', () => openDrawer(b.dataset.open, null, b)));
+  $('search-form').addEventListener('submit', e => { e.preventDefault(); const q = $('site-search').value; if (q.trim()) openDrawer('search', q, $('site-search')); });
+
+  $('save-to-my-cards').addEventListener('click', async () => {
+    if (!db) { say('card-status', 'This browser is not saving cards. Download your card instead.'); return; }
+    try {
+      const all = await tx('saved', 'readonly', s => s.getAll());
+      if (all.length >= 30) { say('card-status', 'My Cards is full (30 cards). Delete one first.'); return; }
+      await tx('saved', 'readwrite', s => s.put({id: `${Date.now()}`, savedAt: Date.now(), draft: {...draft}}));
+      say('card-status', 'Saved to My Cards.');
+    } catch { say('card-status', 'Your card could not be saved. Please try again.'); }
+  });
+
+  /* ---------- Zoom and Fit ---------- */
+  function setZoom(on) { document.body.classList.toggle('zoomed', on); $('zoom-card').setAttribute('aria-pressed', String(on)); requestAnimationFrame(fitWords); }
+  $('zoom-card').addEventListener('click', () => setZoom(!document.body.classList.contains('zoomed')));
+  $('fit-card').addEventListener('click', () => { setZoom(false); $('card-stage').scrollIntoView({block:'center', behavior:'smooth'}); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.classList.contains('zoomed')) setZoom(false); });
+  window.addEventListener('resize', () => requestAnimationFrame(fitWords));
+
+  /* ---------- Download (phones get the Save or Send screen) ---------- */
+  let pictureLibrary = null;
+  const loadPictureLibrary = () => window.html2canvas ? Promise.resolve() : (pictureLibrary ||= new Promise((resolve, reject) => {
+    const s = document.createElement('script'); s.src = 'assets/html2canvas.min.js'; s.onload = resolve; s.onerror = () => { pictureLibrary = null; reject(Error('library')); }; document.head.append(s);
+  }));
+  const isPhone = () => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));
+  async function cardPicture() {
+    await loadPictureLibrary(); await document.fonts.ready;
+    const zoomed = document.body.classList.contains('zoomed');
+    if (zoomed) setZoom(false);
+    card.classList.add('exporting');
+    try {
+      const canvas = await window.html2canvas(card, {scale: 1600 / card.clientWidth, backgroundColor: null, useCORS: true, logging: false});
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      if (!blob) throw Error('no picture');
+      return blob;
+    } finally { card.classList.remove('exporting'); if (zoomed) setZoom(true); }
+  }
+  const phoneSave = $('phone-save');
+  let phoneFiles = [], phoneURL = null;
+  function showPhoneSave(blob) {
+    const picture = new File([blob], `${fileName()}.png`, {type:'image/png'});
+    const sound = soundFile();
+    phoneFiles = sound && navigator.canShare && navigator.canShare({files:[picture, sound]}) ? [picture, sound] : [picture];
+    const canShare = !!(navigator.canShare && navigator.canShare({files: phoneFiles}));
+    if (phoneURL) URL.revokeObjectURL(phoneURL);
+    phoneURL = URL.createObjectURL(blob); $('phone-save-image').src = phoneURL;
+    $('phone-share').hidden = !canShare;
+    const apple = /iPhone|iPad|iPod|Macintosh/i.test(navigator.userAgent);
+    const hold = apple ? 'press and hold the picture, then tap "Save to Photos."' : 'press and hold the picture, then tap "Download image."';
+    $('phone-save-help').textContent = canShare ? `Tap the button to save or send it${phoneFiles.length > 1 ? ' with your sound' : ''}. Or ${hold}` : hold[0].toUpperCase() + hold.slice(1);
+    phoneSave.showModal();
+  }
+  $('phone-share').addEventListener('click', async () => {
+    try { await navigator.share({files: phoneFiles, title: 'My Mama Said card'}); }
+    catch (e) { if (e.name !== 'AbortError') $('phone-save-help').textContent = 'Press and hold the picture, then choose save.'; }
+  });
+  $('phone-save-done').addEventListener('click', () => phoneSave.close());
+  $('download-card').addEventListener('click', async () => {
+    const button = $('download-card'); button.disabled = true; say('card-status', 'Getting your card ready…');
+    try {
+      const blob = await cardPicture();
+      if (isPhone()) { showPhoneSave(blob); say('card-status', 'Your card is ready to save to your phone.'); return; }
+      downloadBlob(blob, `${fileName()}.png`);
+      say('card-status', draft.sound ? 'Your card was downloaded. Tap "Save My Sound" to keep your sound too.' : 'Your card was downloaded. Look in your Downloads folder.');
+    } catch { say('card-status', 'The download did not work. Please try again.'); }
+    finally { button.disabled = false; }
+  });
+
+  /* ---------- Mama reads the card (uses ElevenLabs credits, so the same words are kept and reused) ---------- */
+  let voiceCache = {text:'', blob:null}, player = null;
   const cardWords = () => [draft.title.trim(), draft.message.trim()].filter(Boolean).join('. ');
   async function getMamaVoice() {
     const text = cardWords();
-    if (!text) throw Error('Write a message first, baby.');
+    if (!draft.message.trim()) throw Error('Write your message first, baby.');
     if (voiceCache.text === text && voiceCache.blob) return voiceCache.blob;
-    const response = await fetch('/api/speak', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }), signal: AbortSignal.timeout(45000) });
-    if (!response.ok) {
-      let message = "Mama couldn't speak just now. Please try again.";
-      try { message = (await response.json()).message || message; } catch {}
-      throw Error(message);
-    }
-    const blob = await response.blob();
-    voiceCache = { text, blob };
-    return blob;
+    const response = await fetch('/api/speak', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text}), signal: AbortSignal.timeout(45000)});
+    if (!response.ok) { let m = "Mama couldn't speak just now. Please try again."; try { m = (await response.json()).message || m; } catch {} throw Error(m); }
+    const blob = await response.blob(); voiceCache = {text, blob}; return blob;
   }
-  hearButton.addEventListener('click', async () => {
-    if (player && !player.paused) { player.pause(); hearButton.textContent = '▶ Hear Mama Say It'; voiceStatus.textContent = ''; return; }
-    hearButton.disabled = true; saveVoiceButton.disabled = true;
-    voiceStatus.textContent = 'Mama is getting ready to speak…';
+  $('hear-mama').addEventListener('click', async () => {
+    const label = $('hear-mama-label');
+    if (player && !player.paused) { player.pause(); label.textContent = 'Hear Mama'; say('card-status', ''); return; }
+    $('hear-mama').disabled = true; say('card-status', 'Mama is getting ready to read your card…');
     try {
       const blob = await getMamaVoice();
       if (player) URL.revokeObjectURL(player.src);
       player = new Audio(URL.createObjectURL(blob));
-      player.addEventListener('ended', () => { hearButton.textContent = '▶ Hear Mama Say It'; voiceStatus.textContent = ''; });
-      await player.play();
-      hearButton.textContent = '■ Stop';
-      voiceStatus.textContent = 'Mama is reading your card.';
-    } catch (error) { voiceStatus.textContent = error.message; }
-    finally { hearButton.disabled = false; saveVoiceButton.disabled = false; }
+      player.addEventListener('ended', () => { label.textContent = 'Hear Mama'; say('card-status', ''); });
+      await player.play(); label.textContent = 'Stop'; say('card-status', 'Mama is reading your card.');
+    } catch (e) { say('card-status', e.message); }
+    finally { $('hear-mama').disabled = false; }
   });
-  saveVoiceButton.addEventListener('click', async () => {
-    hearButton.disabled = true; saveVoiceButton.disabled = true;
-    voiceStatus.textContent = 'Getting Mama’s voice ready to save…';
-    try {
-      const blob = await getMamaVoice();
-      const link = document.createElement('a');
-      const name = (draft.title.trim() || 'mama-said-card').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase() || 'mama-said-card';
-      link.download = `${name}-mama-voice.mp3`;
-      link.href = URL.createObjectURL(blob);
-      document.body.append(link); link.click(); link.remove();
-      setTimeout(() => URL.revokeObjectURL(link.href), 4000);
-      voiceStatus.textContent = 'Mama’s voice was saved. Look in your Downloads folder.';
-    } catch (error) { voiceStatus.textContent = error.message; }
-    finally { hearButton.disabled = false; saveVoiceButton.disabled = false; }
+  $('save-mama-voice').addEventListener('click', async () => {
+    say('card-status', 'Getting Mama\'s voice ready to save…');
+    try { const blob = await getMamaVoice(); downloadBlob(blob, `${fileName('-mama-voice')}.mp3`); say('card-status', "Mama's voice was saved. Look in your Downloads folder."); }
+    catch (e) { say('card-status', e.message); }
   });
-  const downloadButton = finishedCard.querySelector('#download-finished-card');
-  const downloadStatus = finishedCard.querySelector('#download-status');
-  // Phones and tablets save pictures through the Share menu or press-and-hold, not a Downloads folder.
-  const isPhone = () => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));
-  function showPhoneSave(blob, fileName) {
-    const url = URL.createObjectURL(blob);
-    const isApple = /iPhone|iPad|iPod|Macintosh/i.test(navigator.userAgent);
-    const overlay = document.createElement('div');
-    overlay.className = 'phone-save';
-    overlay.setAttribute('role', 'dialog');
-    overlay.setAttribute('aria-modal', 'true');
-    overlay.setAttribute('aria-label', 'Save your card');
-    overlay.innerHTML = `<div class="phone-save-box">
-      <h2>Save your card</h2>
-      <button type="button" class="phone-save-share">Save or Send My Card</button>
-      <p class="phone-save-help"></p>
-      <img alt="Your finished Mama Said card">
-      <button type="button" class="phone-save-close">Done</button>
-    </div>`;
-    overlay.querySelector('img').src = url;
-    const file = new File([blob], fileName, {type: 'image/png'});
-    const shareButton = overlay.querySelector('.phone-save-share');
-    const canShare = !!(navigator.canShare && navigator.canShare({files: [file]}));
-    if (!canShare) shareButton.hidden = true;
-    const holdHelp = isApple ? 'press and hold the picture, then tap "Save to Photos."' : 'press and hold the picture, then tap "Download image."';
-    overlay.querySelector('.phone-save-help').textContent = canShare
-      ? (isApple ? 'Tap the button above, then choose "Save Image" to put it in your Photos. Or ' : 'Tap the button above to save or send it. Or ') + holdHelp
-      : holdHelp.charAt(0).toUpperCase() + holdHelp.slice(1);
-    shareButton.addEventListener('click', async () => {
-      try { await navigator.share({files: [file], title: 'My Mama Said card'}); }
-      catch (error) { if (error.name !== 'AbortError') overlay.querySelector('.phone-save-help').textContent = 'Press and hold the picture, then choose save.'; }
-    });
-    const close = () => { overlay.remove(); URL.revokeObjectURL(url); downloadButton.focus(); };
-    overlay.querySelector('.phone-save-close').addEventListener('click', close);
-    overlay.addEventListener('keydown', event => { if (event.key === 'Escape') close(); });
-    document.body.append(overlay);
-    (shareButton.hidden ? overlay.querySelector('.phone-save-close') : shareButton).focus();
-  }
-  downloadButton.addEventListener('click', async () => {
-    downloadButton.disabled = true;
-    downloadStatus.textContent = 'Getting your card ready…';
-    try {
-      await loadPictureLibrary();
-      await document.fonts.ready;
-      const canvas = await window.html2canvas($('card-preview'), { scale: 2, backgroundColor: null, useCORS: true });
-      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-      if (!blob) throw Error('No picture');
-      const name = (draft.title.trim() || 'mama-said-card').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase() || 'mama-said-card';
-      if (isPhone()) {
-        // Phones: show the finished picture with a Save / Share button and press-and-hold help.
-        showPhoneSave(blob, `${name}.png`);
-        downloadStatus.textContent = 'Your card is ready to save to your phone.';
-        return;
-      }
-      const link = document.createElement('a');
-      link.download = `${name}.png`;
-      link.href = URL.createObjectURL(blob);
-      document.body.append(link);
-      link.click();
-      link.remove();
-      setTimeout(() => URL.revokeObjectURL(link.href), 4000);
-      downloadStatus.textContent = 'Your card was downloaded. Look in your Downloads folder.';
-    } catch {
-      downloadStatus.textContent = 'The download did not work. Check your internet connection and try again. Your card is unchanged.';
-    } finally { downloadButton.disabled = false; }
-  });
-  window.addEventListener('beforeunload', event => {
-    if (pending || unsaved || uploading) { event.preventDefault(); event.returnValue = ''; }
-  });
-  const controlsPanel = document.querySelector('.controls-panel');
-  const previewFitArea = document.querySelector('.preview-fit-area');
-  let lastEditingField = null;
-  let cardViewReturn = null;
-  // CSS owns viewport sizing. Page scrolling never scales card typography.
-  function alignDesktopEditor() { controlsPanel.scrollTop = 0; }
-  controlsPanel.addEventListener('focusin',event => { lastEditingField = event.target; });
-  function revealWriting(part) {
-    if (!matchMedia('(min-width:900px)').matches || document.body.classList.contains('card-full-view')) return;
-    const target = $(`preview-${part}`);
-    const area = previewFitArea.getBoundingClientRect();
-    const text = target.getBoundingClientRect();
-    if (text.top < area.top || text.bottom > area.bottom) {
-      previewFitArea.scrollTop += text.top - area.top - 12;
-    }
-  }
-  ['title-font-family','title-font-size','title-text-color','title-text-backing'].forEach(id => $(id).addEventListener('change',() => revealWriting('title')));
-  ['font-family','font-size','text-color','message-text-backing'].forEach(id => $(id).addEventListener('change',() => revealWriting('message')));
-  $('card-title').addEventListener('input',() => revealWriting('title'));
-  $('card-message').addEventListener('input',() => revealWriting('message'));
 
-  function openCardView() {
-    cardViewReturn = {scrollY:window.scrollY,controlsScroll:controlsPanel.scrollTop,previewScroll:previewFitArea.scrollTop,focus:lastEditingField};
-    document.body.classList.add('card-full-view');
-    $('close-card-view').hidden = false;
-    $('preview-heading').focus();
-    window.scrollTo(0,0);
-  }
-  function closeCardView() {
-    if (!document.body.classList.contains('card-full-view')) return;
-    document.body.classList.remove('card-full-view');
-    $('close-card-view').hidden = true;
-    controlsPanel.scrollTop = cardViewReturn?.controlsScroll || 0;
-    (cardViewReturn?.focus || $('card-controls')).focus({preventScroll:true});
-    window.scrollTo(0,cardViewReturn?.scrollY || 0);
-    previewFitArea.scrollTop = cardViewReturn?.previewScroll || 0;
-  }
-  $('view-card-button').addEventListener('click',openCardView);
-  $('close-card-view').addEventListener('click',closeCardView);
-  document.addEventListener('keydown',event => {if(event.key === 'Escape' && document.body.classList.contains('card-full-view')) {event.preventDefault();closeCardView();}});
-  initialize();
+  /* ---------- Start over, text size, start up ---------- */
+  $('start-over').addEventListener('click', () => {
+    if (!confirm('Start over? This clears your words, picture, and sound. Saved cards in My Cards stay.')) return;
+    draft = fresh(); populate(); usePicture(0, true); $('card-title').focus();
+  });
+  const sizeKey = 'mama-said-interface-text-size';
+  const applySize = v => { const s = ['normal','large','extra-large'].includes(v) ? v : 'normal'; document.documentElement.dataset.textSize = s; $('interface-text-size').value = s; requestAnimationFrame(fitWords); };
+  try { applySize(localStorage.getItem(sizeKey)); } catch { applySize('normal'); }
+  $('interface-text-size').addEventListener('change', e => { applySize(e.target.value); try { localStorage.setItem(sizeKey, e.target.value); } catch {} });
+  window.addEventListener('beforeunload', e => { if (recorder && recorder.state === 'recording') { e.preventDefault(); e.returnValue = ''; } });
+
+  (async () => {
+    let restored = null;
+    try { db = await openDatabase(); restored = readStored(await tx('drafts', 'readonly', s => s.get('current'))); }
+    catch { db = null; say('save-status', 'This browser is not saving drafts. Your card stays on this page.'); }
+    if (restored) { draft = restored; populate(); }
+    else { populate(); await usePicture(0, true); } // First visit: the lotus grandma, like the design picture.
+    document.fonts.ready.then(fitWords);
+  })();
 })();

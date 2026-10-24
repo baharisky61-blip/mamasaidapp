@@ -90,7 +90,7 @@
     targets = Array.prototype.slice.call(document.querySelectorAll('[data-talk-to-mama]'));
     // Pages without Mama's big picture (like the card designer) get a small Talk with Mama button in the top menu.
     if (!targets.length) {
-      var nav = document.querySelector('.designer-header nav');
+      var nav = document.querySelector('.designer-header .header-tools') || document.querySelector('.designer-header nav');
       if (!nav) return;
       var button = document.createElement('button');
       button.type = 'button';
@@ -106,7 +106,7 @@
       targets = [button];
     }
     statusEls = Array.prototype.slice.call(document.querySelectorAll('[data-talk-status]'));
-    if (!statusEls.length) statusEls = Array.prototype.slice.call(document.querySelectorAll('.designer-header nav [role=status]'));
+    if (!statusEls.length) statusEls = Array.prototype.slice.call(document.querySelectorAll('.designer-header [role=status]'));
     targets.forEach(function (target) { target.addEventListener('click', toggle); });
     setState('idle', WORDS.idle);
     window.addEventListener('pagehide', function () { if (conversation) conversation.endSession(); });
