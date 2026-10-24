@@ -15,8 +15,8 @@
     {id:'royal', name:'Royal blue', bg:'radial-gradient(circle at 72% 62%,#8dbbff 0%,#2350b9 45%,#0c2163 100%)', ink:'light', full:true}
   ];
   const cardPictures = [
-    ['lotus-grandma','Lotus grandma'],['family-smiles','Family smiles'],['sunset-family','Sunset family'],['candlelight-couple','Candlelight couple'],['candlelit-table','Candlelit table'],['cookout','Cookout'],['grandparents-couch','Grandparents'],['three-generations','Three generations'],['comfort-embrace','Comfort'],['white-lilies','White lilies'],['peaceful-beach','Peaceful beach'],['cozy-fireplace','Cozy fireplace'],['cozy-couch','Cozy couch'],['sunny-living-room','Sunny living room'],['garden-retreat','Garden retreat'],['candle-branch','Candle and branch'],['candle-window','Candle by the window'],['bride-roses','Bride in roses'],['bride-garden','Bride in the garden'],['flower-arch','White flower arch'],['wedding-cake','Wedding cake'],['candlelit-canopy','Candlelit canopy'],['garden-party-lights','Garden party'],['golden-hour-beauty','Golden hour beauty'],['golden-mermaid','Golden mermaid'],['silver-mermaid','Silver mermaid'],['space-queen','Space queen'],['cuddle-candlelight','Cuddle by candlelight'],['flowers-for-you','Flowers for you'],['i-love-you-roses','I love you roses'],['wildflower-path','Wildflower path'],['happy-friends','Happy friends'],['jelly-buddies','Jelly buddies'],['just-checking-in','Just checking in'],['grandma-tea-window','Grandma with tea'],['tea-with-friends','Tea with friends'],['warm-tea-hands','Warm tea'],['held-in-comfort','Held in comfort'],['helping-hand','Helping hand'],['royal-blue-couple','Royal blue couple'],['elegant-evening','Elegant evening'],['glowing-rose','Glowing rose'],['golden-goddess','Golden goddess'],['royal-couple','Royal couple'],['golden-years-love','Golden years love'],['slow-dance','Slow dance'],['sunset-embrace','Sunset embrace'],['paris-evening','Paris evening'],['lantern-walk','Lantern walk'],['golden-field-walk','Golden field walk'],['starry-camp','Starry campout'],['candlelit-bath','Candlelit bath'],['doves-birdbath','Doves in love'],['doves-branch','Doves on a branch'],['doves-lantern','Doves by lantern'],['red-roses','Red roses'],['ring-box','Ring box'],['two-mugs','Two mugs'],['porch-rockers','Porch rockers'],['sistas-laughing','Sistas laughing'],['morning-park','Morning park'],['golden-afro-combs','Golden afro combs'],['golden-bloom','Golden bloom'],['jeweled-mandala','Jeweled mandala'],['starry-night','Starry night'],['football-field','Football field'],['stadium-lights','Stadium lights'],['baseball-diamond','Baseball diamond'],['ballpark-grass','Ballpark'],['basketball-sunset','Basketball sunset'],['neighborhood-court','Neighborhood court'],['star-gold','Gold star'],['star-silver','Silver star'],['star-pink','Pink star'],['star-soft-pink','Soft pink star'],['star-red','Red star'],['star-purple','Purple star'],['star-blue','Blue star'],['star-sky-blue','Sky blue star'],['star-green','Green star']
-  ].map(([file,name]) => ({file,name}));
+    ['lotus-grandma-card','Lotus grandma',true],['family-smiles','Family smiles'],['sunset-family','Sunset family'],['candlelight-couple','Candlelight couple'],['candlelit-table','Candlelit table'],['cookout','Cookout'],['grandparents-couch','Grandparents'],['three-generations','Three generations'],['comfort-embrace','Comfort'],['white-lilies','White lilies'],['peaceful-beach','Peaceful beach'],['cozy-fireplace','Cozy fireplace'],['cozy-couch','Cozy couch'],['sunny-living-room','Sunny living room'],['garden-retreat','Garden retreat'],['candle-branch','Candle and branch'],['candle-window','Candle by the window'],['bride-roses','Bride in roses'],['bride-garden','Bride in the garden'],['flower-arch','White flower arch'],['wedding-cake','Wedding cake'],['candlelit-canopy','Candlelit canopy'],['garden-party-lights','Garden party'],['golden-hour-beauty','Golden hour beauty'],['golden-mermaid','Golden mermaid'],['silver-mermaid','Silver mermaid'],['space-queen','Space queen'],['cuddle-candlelight','Cuddle by candlelight'],['flowers-for-you','Flowers for you'],['i-love-you-roses','I love you roses'],['wildflower-path','Wildflower path'],['happy-friends','Happy friends'],['jelly-buddies','Jelly buddies'],['just-checking-in','Just checking in'],['grandma-tea-window','Grandma with tea'],['tea-with-friends','Tea with friends'],['warm-tea-hands','Warm tea'],['held-in-comfort','Held in comfort'],['helping-hand','Helping hand'],['royal-blue-couple','Royal blue couple'],['elegant-evening','Elegant evening'],['glowing-rose','Glowing rose'],['golden-goddess','Golden goddess'],['royal-couple','Royal couple'],['golden-years-love','Golden years love'],['slow-dance','Slow dance'],['sunset-embrace','Sunset embrace'],['paris-evening','Paris evening'],['lantern-walk','Lantern walk'],['golden-field-walk','Golden field walk'],['starry-camp','Starry campout'],['candlelit-bath','Candlelit bath'],['doves-birdbath','Doves in love'],['doves-branch','Doves on a branch'],['doves-lantern','Doves by lantern'],['red-roses','Red roses'],['ring-box','Ring box'],['two-mugs','Two mugs'],['porch-rockers','Porch rockers'],['sistas-laughing','Sistas laughing'],['morning-park','Morning park'],['golden-afro-combs','Golden afro combs'],['golden-bloom','Golden bloom'],['jeweled-mandala','Jeweled mandala'],['starry-night','Starry night'],['football-field','Football field'],['stadium-lights','Stadium lights'],['baseball-diamond','Baseball diamond'],['ballpark-grass','Ballpark'],['basketball-sunset','Basketball sunset'],['neighborhood-court','Neighborhood court'],['star-gold','Gold star'],['star-silver','Silver star'],['star-pink','Pink star'],['star-soft-pink','Soft pink star'],['star-red','Red star'],['star-purple','Purple star'],['star-blue','Blue star'],['star-sky-blue','Sky blue star'],['star-green','Green star']
+  ].map(([file,name,art]) => ({file,name,art:!!art}));
   // Ready-made cards in Mama's voice, built from Nelcea's own sayings. No holidays.
   const quickCards = [
     {group:'Encouragement', title:"You've Got This, Baby", message:"Honey, you got all that experience. There's got to be something in there you can do. Your brain already knows what you need. Go on, baby. I believe in you."},
@@ -50,7 +50,7 @@
   ];
 
   /* ---------- Draft ---------- */
-  const fresh = () => ({version:3, title:'A note for you', message:'', style:'lotus', image:null, imageName:'', pictureIndex:-1, ink:'dark', size:'normal', mama:false, sound:null, soundName:'', soundKind:''});
+  const fresh = () => ({version:3, title:'A note for you', message:'', style:'lotus', image:null, imageName:'', pictureIndex:-1, art:false, ink:'dark', size:'normal', mama:false, sound:null, soundName:'', soundKind:''});
   let draft = fresh();
   let db = null;
   const MAX_IMAGE = 10 * 1024 * 1024, MAX_SOUND = 15 * 1024 * 1024;
@@ -86,6 +86,7 @@
     if (value.version === 3) {
       if (styles.some(s => s.id === value.style)) d.style = value.style;
       if (Number.isInteger(value.pictureIndex)) d.pictureIndex = value.pictureIndex;
+      d.art = !!value.art && !!d.image;
       if (['dark','light'].includes(value.ink)) d.ink = value.ink;
       if (['normal','large'].includes(value.size)) d.size = value.size;
       if (value.sound instanceof Blob && value.sound.size <= MAX_SOUND) { d.sound = value.sound; d.soundName = String(value.soundName || 'Your sound'); d.soundKind = value.soundKind === 'voice' ? 'voice' : 'music'; }
@@ -124,9 +125,10 @@
     const [top, script] = splitTitle(draft.title || 'A note for you');
     $('card-top').textContent = top;
     $('card-script').textContent = script;
-    $('card-message-text').textContent = draft.message;
+    $('card-message-text').textContent = draft.message || 'Your message will appear here, right on the card.';
+    $('card-message-text').classList.toggle('placeholder', !draft.message);
     card.style.backgroundImage = picture ? `url("${imageURL}")` : style.bg;
-    card.className = ['card', `ink-${draft.ink}`, `size-${draft.size}`, !picture && style.full ? 'full-style' : '', picture ? 'has-picture' : '', picture && imageWide ? 'wide-picture' : ''].join(' ').replace(/\s+/g, ' ').trim();
+    card.className = ['card', `ink-${draft.ink}`, `size-${draft.size}`, !picture && style.full ? 'full-style' : '', picture ? 'has-picture' : '', picture && draft.art ? 'art-card' : ''].join(' ').replace(/\s+/g, ' ').trim();
     $('card-mama').hidden = !draft.mama;
     $('card-sound-chip').hidden = !draft.sound;
     $('show-mama').checked = draft.mama;
@@ -179,7 +181,7 @@
     tile.type = 'button'; tile.className = 'style-tile'; tile.dataset.style = style.id;
     tile.setAttribute('role', 'radio'); tile.setAttribute('aria-label', style.name); tile.title = style.name;
     tile.style.backgroundImage = style.bg;
-    tile.addEventListener('click', () => { draft.style = style.id; draft.image = null; draft.imageName = ''; draft.pictureIndex = -1; draft.ink = style.ink; setImageURL(); save(); });
+    tile.addEventListener('click', () => { draft.style = style.id; draft.image = null; draft.imageName = ''; draft.pictureIndex = -1; draft.art = false; draft.ink = style.ink; setImageURL(); save(); });
     $('style-tiles').append(tile);
   });
 
@@ -203,7 +205,7 @@
       if (!response.ok) throw Error('missing');
       const blob = await response.blob();
       if (version !== pictureVersion) return;
-      draft.image = new Blob([blob], {type:'image/jpeg'}); draft.imageName = picture.name; draft.pictureIndex = index; draft.ink = 'dark';
+      draft.image = new Blob([blob], {type:'image/jpeg'}); draft.imageName = picture.name; draft.pictureIndex = index; draft.art = picture.art; draft.ink = 'dark';
       setImageURL(); save();
       if (!quiet) say('card-status', `${picture.name} is on your card.`);
     } catch { if (!quiet) say('card-status', 'That picture could not load. Please try again.'); }
@@ -220,7 +222,7 @@
     try {
       const img = new Image(); img.src = url; await img.decode();
       pictureVersion++;
-      draft.image = file; draft.imageName = file.name; draft.pictureIndex = -1;
+      draft.image = file; draft.imageName = file.name; draft.pictureIndex = -1; draft.art = false;
       setImageURL(); save(); say('card-status', 'Your picture is on your card.');
     } catch { say('card-status', 'That picture could not be read. Please choose another.'); }
     finally { URL.revokeObjectURL(url); }
