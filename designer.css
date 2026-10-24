@@ -202,3 +202,10 @@ button:hover{background:#fbf5ea}
 }
 .card-full-view .assistance-panel{display:none!important}
 .phone-save-box{border-radius:22px}.phone-save-share{border-color:var(--ocean)}
+
+/* Cleaner look (Oct 23): fewer words on screen. Hidden text stays available to screen readers. */
+#active-step-description,#controls-scroll-hint,#controls-legend,.future-dictation,.starter-layouts p,.quick-cards p,.collection-note,#image-guidance,.card-pictures>p:not([role]),.inspiration-box>p:first-of-type,.preview-heading-row h2,.live-indicator,.preview-note,#save-status{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important}
+.draft-information{display:none}
+.preview-heading-row{justify-content:flex-end;background:transparent;border:0;box-shadow:none;padding:0}
+.quick-cards{border-bottom:0;border-top:1px solid var(--line);padding-top:10px;margin-top:14px}
+.starter-layouts{display:none}
