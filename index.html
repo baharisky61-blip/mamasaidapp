@@ -56,7 +56,9 @@
   .btn-note{display:block;margin-top:14px;font-size:15px;color:var(--muted)}
 
   /* Mama portrait */
-  .mama{position:relative;display:flex;justify-content:center}
+  .mama{position:relative;display:flex;flex-direction:column;align-items:center}
+  button.halo{border:0;padding:0;font:inherit;color:inherit}
+  button.halo:focus-visible{outline:4px solid var(--gold,#E3CAA0);outline-offset:6px}
   .halo{
     width:min(380px,80vw);aspect-ratio:1;border-radius:50%;
     background:radial-gradient(circle at 35% 30%,var(--ivory),var(--gold) 45%,var(--plum-soft) 100%);
@@ -120,7 +122,7 @@
 </style>
 <link rel="stylesheet" href="studio-palette.css">
 <link rel="stylesheet" href="studio-home.css">
-<script src="voice-config.js"></script>
+<script src="voice-config.js?v=2"></script>
 </head>
 <body>
 
@@ -135,7 +137,6 @@
   <section class="hero">
     <div class="wrap">
       <div>
-        <span class="eyebrow">Coming soon</span>
         <h1>A grandmother's voice, whenever you need it.</h1>
         <p class="greeting">"What's wrong, baby? Do you need some encouraging words?"</p>
         <p class="lead">Mama Said is a warm AI grandmother who listens, speaks comfort out loud, and helps you send talking cards to the people you love.</p>
@@ -144,10 +145,11 @@
         <span class="btn-note">7 days free when we launch. No pressure, baby.</span>
       </div>
       <div class="mama">
-        <div class="halo">
+        <button type="button" class="halo" data-talk-to-mama aria-label="Talk with Mama">
           <img src="mama.jpg" alt="Mama, the Mama Said AI grandmother" onerror="this.remove()">
-          <div class="placeholder">Mama is<br>getting ready<br>for you</div>
-        </div>
+          <span class="placeholder">Mama is<br>getting ready<br>for you</span>
+        </button>
+        <p class="mama-talk-status voice-only" data-talk-status role="status" aria-live="polite">Tap Mama's face to talk with her</p>
       </div>
     </div>
   </section>
@@ -226,7 +228,7 @@
   <section class="alt" aria-labelledby="conversation-title"><div class="wrap">
     <span class="eyebrow">Talk with Mama</span>
     <h2 id="conversation-title">A conversation with Mama</h2>
-    <p class="voice-only">Mama is ready to listen. Tap the <strong>Talk with Mama</strong> button at the bottom of your screen, allow your microphone, and tell her what's on your heart.</p>
+    <p class="voice-only">Mama is ready to listen. Tap <strong>Mama's face</strong> at the top of this page, allow your microphone, and tell her what's on your heart. Tap her face again to say goodbye.</p>
     <p class="voice-soon">Mama's voice is coming soon, baby. For now, make a card and let your words do the talking.</p>
   </div></section>
 </main>
