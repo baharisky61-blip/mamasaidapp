@@ -50,7 +50,7 @@
   ];
 
   /* ---------- Draft ---------- */
-  const fresh = () => ({version:3, title:'A note for you', message:'', style:'lotus', image:null, imageName:'', pictureIndex:-1, art:false, ink:'dark', size:'normal', mama:false, sound:null, soundName:'', soundKind:''});
+  const fresh = () => ({version:3, title:'A note for you', message:'', style:'lotus', image:null, imageName:'', pictureIndex:-1, art:false, ink:'dark', size:'normal', place:'left', mama:false, sound:null, soundName:'', soundKind:''});
   let draft = fresh();
   let db = null;
   const MAX_IMAGE = 10 * 1024 * 1024, MAX_SOUND = 15 * 1024 * 1024;
@@ -89,6 +89,7 @@
       d.art = !!value.art && !!d.image;
       if (['dark','light'].includes(value.ink)) d.ink = value.ink;
       if (['normal','large'].includes(value.size)) d.size = value.size;
+      if (['left','right','bottom'].includes(value.place)) d.place = value.place;
       if (value.sound instanceof Blob && value.sound.size <= MAX_SOUND) { d.sound = value.sound; d.soundName = String(value.soundName || 'Your sound'); d.soundKind = value.soundKind === 'voice' ? 'voice' : 'music'; }
     } else {
       const map = {ocean:'ocean', turquoise:'ocean', plum:'royal', gold:'gold', champagne:'gold', pearl:'pearl', ivory:'ivory', blush:'pearl', rosewood:'gold'};
@@ -128,7 +129,7 @@
     $('card-message-text').textContent = draft.message || 'Your message will appear here, right on the card.';
     $('card-message-text').classList.toggle('placeholder', !draft.message);
     card.style.backgroundImage = picture ? `url("${imageURL}")` : style.bg;
-    card.className = ['card', `ink-${draft.ink}`, `size-${draft.size}`, !picture && style.full ? 'full-style' : '', picture ? 'has-picture' : '', picture && draft.art ? 'art-card' : ''].join(' ').replace(/\s+/g, ' ').trim();
+    card.className = ['card', `ink-${draft.ink}`, `size-${draft.size}`, `place-${draft.place}`, !picture && style.full ? 'full-style' : '', picture ? 'has-picture' : '', picture && draft.art ? 'art-card' : ''].join(' ').replace(/\s+/g, ' ').trim();
     $('card-mama').hidden = !draft.mama;
     $('card-sound-chip').hidden = !draft.sound;
     $('show-mama').checked = draft.mama;
@@ -136,6 +137,7 @@
     document.querySelectorAll('.picture-tile').forEach(tile => tile.setAttribute('aria-pressed', String(picture && Number(tile.dataset.index) === draft.pictureIndex)));
     document.querySelectorAll('[data-ink]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.ink === draft.ink)));
     document.querySelectorAll('[data-size]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.size === draft.size)));
+    document.querySelectorAll('[data-place]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.place === draft.place)));
     say('title-count', `${draft.title.length}/80`);
     say('message-count', `${draft.message.length}/500`);
     say('image-name', draft.image && draft.pictureIndex < 0 ? draft.imageName : 'No file chosen');
@@ -175,6 +177,7 @@
   $('show-mama').addEventListener('change', e => { draft.mama = e.target.checked; save(); });
   document.querySelectorAll('[data-ink]').forEach(b => b.addEventListener('click', () => { draft.ink = b.dataset.ink; save(); }));
   document.querySelectorAll('[data-size]').forEach(b => b.addEventListener('click', () => { draft.size = b.dataset.size; save(); }));
+  document.querySelectorAll('[data-place]').forEach(b => b.addEventListener('click', () => { draft.place = b.dataset.place; save(); }));
 
   styles.forEach(style => {
     const tile = document.createElement('button');
