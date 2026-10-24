@@ -50,7 +50,7 @@
   ];
 
   /* ---------- Draft ---------- */
-  const fresh = () => ({version:3, title:'A note for you', message:'', style:'lotus', image:null, imageName:'', pictureIndex:-1, art:false, ink:'dark', size:'normal', place:'left', mama:false, sound:null, soundName:'', soundKind:''});
+  const fresh = () => ({version:3, title:'A note for you', message:'', style:'lotus', image:null, imageName:'', pictureIndex:-1, art:false, ink:'dark', size:'normal', place:'bottom', mama:false, sound:null, soundName:'', soundKind:''});
   let draft = fresh();
   let db = null;
   const MAX_IMAGE = 10 * 1024 * 1024, MAX_SOUND = 15 * 1024 * 1024;
@@ -152,11 +152,25 @@
     while (words.scrollHeight > words.clientHeight + 1 && size > floor) { size -= 0.5; message.style.fontSize = `${size}px`; }
   }
   let imageWide = false;
-  function setImageURL() {
+  // When a new photo goes on the card, pick light or dark words to match the picture where the words sit.
+  function setImageURL(chooseInk = false) {
     if (imageURL) URL.revokeObjectURL(imageURL);
     imageURL = draft.image ? URL.createObjectURL(draft.image) : null;
     imageWide = false;
-    if (imageURL) { const probe = new Image(); const url = imageURL; probe.onload = () => { if (url !== imageURL) return; imageWide = probe.naturalWidth / probe.naturalHeight > 8 / 7; render(); }; probe.src = url; }
+    if (imageURL) { const probe = new Image(); const url = imageURL; probe.onload = () => {
+      if (url !== imageURL) return;
+      imageWide = probe.naturalWidth / probe.naturalHeight > 8 / 7;
+      if (chooseInk && !draft.art) {
+        try {
+          const c = document.createElement('canvas'); c.width = 40; c.height = 35; const g = c.getContext('2d');
+          g.drawImage(probe, 0, 0, 40, 35);
+          const area = draft.place === 'bottom' ? [0, 22, 40, 13] : draft.place === 'right' ? [20, 0, 20, 35] : [0, 0, 20, 35];
+          const d = g.getImageData(...area).data; let sum = 0;
+          for (let i = 0; i < d.length; i += 4) sum += (0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2]) / 255;
+          draft.ink = sum / (d.length / 4) < 0.58 ? 'light' : 'dark'; save();
+        } catch {}
+      }
+      render(); }; probe.src = url; }
   }
   function setSound() {
     if (soundURL) URL.revokeObjectURL(soundURL);
@@ -177,7 +191,7 @@
   $('show-mama').addEventListener('change', e => { draft.mama = e.target.checked; save(); });
   document.querySelectorAll('[data-ink]').forEach(b => b.addEventListener('click', () => { draft.ink = b.dataset.ink; save(); }));
   document.querySelectorAll('[data-size]').forEach(b => b.addEventListener('click', () => { draft.size = b.dataset.size; save(); }));
-  document.querySelectorAll('[data-place]').forEach(b => b.addEventListener('click', () => { draft.place = b.dataset.place; save(); }));
+  document.querySelectorAll('[data-place]').forEach(b => b.addEventListener('click', () => { draft.place = b.dataset.place; if (draft.image && !draft.art) setImageURL(true); save(); }));
 
   styles.forEach(style => {
     const tile = document.createElement('button');
@@ -209,7 +223,7 @@
       const blob = await response.blob();
       if (version !== pictureVersion) return;
       draft.image = new Blob([blob], {type:'image/jpeg'}); draft.imageName = picture.name; draft.pictureIndex = index; draft.art = picture.art; draft.ink = 'dark';
-      setImageURL(); save();
+      setImageURL(true); save();
       if (!quiet) say('card-status', `${picture.name} is on your card.`);
     } catch { if (!quiet) say('card-status', 'That picture could not load. Please try again.'); }
   }
@@ -226,7 +240,7 @@
       const img = new Image(); img.src = url; await img.decode();
       pictureVersion++;
       draft.image = file; draft.imageName = file.name; draft.pictureIndex = -1; draft.art = false;
-      setImageURL(); save(); say('card-status', 'Your picture is on your card.');
+      setImageURL(true); save(); say('card-status', 'Your picture is on your card.');
     } catch { say('card-status', 'That picture could not be read. Please choose another.'); }
     finally { URL.revokeObjectURL(url); }
   });

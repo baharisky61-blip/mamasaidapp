@@ -217,17 +217,24 @@ body.zoomed .card-stage{width:min(94vw,calc((100vh - 170px) * 8 / 7));max-width:
 .card-message.placeholder{opacity:.55;font-style:italic}
 .card.exporting .card-message.placeholder{visibility:hidden}
 
-/* Photo cards: the whole picture stays bright. The words sit on a small soft note card instead of fading the photo. */
+/* Photo cards: the picture is the star. Small words are written right on it, along the bottom by default,
+   with only a soft shadow so they can be read. No box, no fading. */
 .card.has-picture:not(.art-card) .card-scrim{display:none}
-.card.has-picture:not(.art-card) .card-words{right:auto;bottom:auto;width:auto;max-width:50%;max-height:72cqi;padding:3.4cqi 4cqi 3.6cqi;background:#fffaf2d6;border:1px solid #e3caa0b3;border-radius:2.4cqi;box-shadow:0 1.4cqi 4cqi #072f4333}
-.card.has-picture.ink-light:not(.art-card) .card-words{background:#072f43c7;border-color:#e3caa066}
-.card.has-picture:not(.art-card) .card-top{margin-top:0}
-.card.has-picture:not(.art-card) .card-signature{left:auto;right:4cqi;color:#fffcf5;text-shadow:0 .3cqi 1.2cqi #000000a6}
-.card.has-picture.place-right:not(.art-card) .card-words{left:auto;right:5cqi}
-.card.has-picture.place-right:not(.art-card) .card-signature{right:auto;left:4cqi}
-.card.has-picture.place-bottom:not(.art-card) .card-words{top:auto;bottom:5cqi;left:10cqi;right:10cqi;max-width:none;max-height:40cqi;align-items:center;text-align:center;padding:2.4cqi 4cqi 2.8cqi}
-.card.has-picture.place-bottom:not(.art-card) .card-top{font-size:4cqi}.card.has-picture.place-bottom:not(.art-card) .card-script{font-size:7cqi}
-.card.has-picture.place-bottom:not(.art-card) .card-ornament{margin-left:auto;margin-right:auto}
+.card.has-picture:not(.art-card) .card-words{inset:auto auto 5cqi 6cqi;width:44%;max-height:60cqi;justify-content:flex-end}
+.card.has-picture:not(.art-card) .card-top{margin:0;font-size:3.6cqi}
+.card.has-picture:not(.art-card) .card-script{font-size:6.6cqi;padding-left:2.4cqi}
+.card.has-picture:not(.art-card) .card-ornament{margin:.8cqi 0 1cqi 2.4cqi;width:38%}
+.card.has-picture:not(.art-card) .card-message{font-size:3cqi;line-height:1.38}
+.card.has-picture.size-large:not(.art-card) .card-message{font-size:3.6cqi}
+.card.has-picture.place-right:not(.art-card) .card-words{left:auto;right:6cqi}
+.card.has-picture.place-bottom:not(.art-card) .card-words{left:8cqi;right:8cqi;width:auto;max-height:40cqi;align-items:center;text-align:center}
 .card.has-picture.place-bottom:not(.art-card) .card-script{padding-left:0}
-.card.has-picture.place-bottom:not(.art-card) .card-signature{bottom:auto;top:3cqi}
+.card.has-picture.place-bottom:not(.art-card) .card-ornament{margin-left:auto;margin-right:auto;width:30%}
+.card.has-picture.ink-dark:not(.art-card) .card-words{color:#14262f;text-shadow:0 0 1.4cqi #fffaf2,0 0 .5cqi #fffaf2}
+.card.has-picture.ink-dark:not(.art-card) .card-top{color:#14262f}
+.card.has-picture.ink-light:not(.art-card) .card-words{color:#fffcf5;text-shadow:0 .2cqi .5cqi #000000f2,0 0 1.4cqi #000000c7,0 0 3.2cqi #0000008c}
+.card.has-picture.ink-light:not(.art-card) .card-top{color:#fffcf5}
+.card.has-picture.ink-light:not(.art-card) .card-script{color:#ffe6b0}
+.card.has-picture.ink-light.has-picture:not(.art-card) .card-ornament{color:#f6dfaa}
+.card.has-picture:not(.art-card) .card-signature{left:auto;right:3.4cqi;bottom:auto;top:3cqi;font-size:3.6cqi;color:#fffcf5;text-shadow:0 .3cqi 1.2cqi #000000a6}
 .segmented button{padding:6px 8px}
