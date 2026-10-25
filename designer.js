@@ -256,6 +256,16 @@
     draft.sound = file; draft.soundName = file.name; draft.soundKind = 'music';
     setSound(); save(); say('sound-status', 'Your music is on your card.');
   });
+  (function () {
+    const chip = $('card-sound-chip'), player = $('sound-player');
+    const label = () => { chip.textContent = player.paused ? '\u25B6 Play sound' : '\u275A\u275A Pause'; };
+    chip.addEventListener('click', e => {
+      e.preventDefault(); e.stopPropagation();
+      if (!player.src) return;
+      if (player.paused) player.play().catch(() => {}); else player.pause();
+    });
+    ['play','pause','ended','emptied'].forEach(ev => player.addEventListener(ev, label));
+  })();
   let recorder = null, recordTimer = null;
   $('record-voice').addEventListener('click', async () => {
     const button = $('record-voice');
