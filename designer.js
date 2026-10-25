@@ -132,6 +132,7 @@
     card.className = ['card', `ink-${draft.ink}`, `size-${draft.size}`, `place-${draft.place}`, !picture && style.full ? 'full-style' : '', picture ? 'has-picture' : '', picture && draft.art ? 'art-card' : ''].join(' ').replace(/\s+/g, ' ').trim();
     $('card-mama').hidden = !draft.mama;
     $('card-sound-chip').hidden = !draft.sound;
+    $('make-video').hidden = !draft.sound;
     $('show-mama').checked = draft.mama;
     document.querySelectorAll('.style-tile').forEach(tile => tile.setAttribute('aria-checked', String(!picture && tile.dataset.style === draft.style)));
     document.querySelectorAll('.picture-tile').forEach(tile => tile.setAttribute('aria-pressed', String(picture && Number(tile.dataset.index) === draft.pictureIndex)));
@@ -468,16 +469,22 @@
   }
   const phoneSave = $('phone-save');
   let phoneFiles = [], phoneURL = null;
-  function showPhoneSave(blob) {
-    const picture = new File([blob], `${fileName()}.png`, {type:'image/png'});
-    const sound = soundFile();
-    phoneFiles = sound && navigator.canShare && navigator.canShare({files:[picture, sound]}) ? [picture, sound] : [picture];
+  function showPhoneSave(blob, video = false) {
+    const ext = video ? (blob.type.includes('mp4') ? 'mp4' : 'webm') : 'png';
+    const main = new File([blob], `${fileName(video ? '-video' : '')}.${ext}`, {type: blob.type || (video ? 'video/mp4' : 'image/png')});
+    const sound = video ? null : soundFile();
+    phoneFiles = sound && navigator.canShare && navigator.canShare({files:[main, sound]}) ? [main, sound] : [main];
     const canShare = !!(navigator.canShare && navigator.canShare({files: phoneFiles}));
     if (phoneURL) URL.revokeObjectURL(phoneURL);
-    phoneURL = URL.createObjectURL(blob); $('phone-save-image').src = phoneURL;
+    phoneURL = URL.createObjectURL(blob);
+    $('phone-save-image').hidden = video; $('phone-save-video').hidden = !video;
+    if (video) { $('phone-save-video').src = phoneURL; $('phone-save-image').removeAttribute('src'); }
+    else { $('phone-save-image').src = phoneURL; $('phone-save-video').removeAttribute('src'); }
+    $('phone-save-title').textContent = video ? 'Your video card is ready' : 'Save your card';
+    $('phone-share').textContent = video ? 'Save or Send My Video' : 'Save or Send My Card';
     $('phone-share').hidden = !canShare;
     const apple = /iPhone|iPad|iPod|Macintosh/i.test(navigator.userAgent);
-    const hold = apple ? 'press and hold the picture, then tap "Save to Photos."' : 'press and hold the picture, then tap "Download image."';
+    const hold = video ? 'press play to watch it.' : (apple ? 'press and hold the picture, then tap "Save to Photos."' : 'press and hold the picture, then tap "Download image."');
     $('phone-save-help').textContent = canShare ? `Tap the button to save or send it${phoneFiles.length > 1 ? ' with your sound' : ''}. Or ${hold}` : hold[0].toUpperCase() + hold.slice(1);
     phoneSave.showModal();
   }
@@ -485,7 +492,7 @@
     try { await navigator.share({files: phoneFiles, title: 'My Mama Said card'}); }
     catch (e) { if (e.name !== 'AbortError') $('phone-save-help').textContent = 'Press and hold the picture, then choose save.'; }
   });
-  $('phone-save-done').addEventListener('click', () => phoneSave.close());
+  $('phone-save-done').addEventListener('click', () => { $('phone-save-video').pause(); phoneSave.close(); });
   $('download-card').addEventListener('click', async () => {
     const button = $('download-card'); button.disabled = true; say('card-status', 'Getting your card ready…');
     try {
@@ -546,4 +553,69 @@
     else { populate(); await usePicture(0, true); } // First visit: the lotus grandma, like the design picture.
     document.fonts.ready.then(fitWords);
   })();
+
+  /* ---------- Video card: the card picture plus the card's sound (and Mama's voice if she already read it) ---------- */
+  const VIDEO_MAX = 60;
+  function videoType() {
+    if (!window.MediaRecorder) return null;
+    return ['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=avc1,mp4a','video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm']
+      .find(t => { try { return MediaRecorder.isTypeSupported(t); } catch { return false; } }) || null;
+  }
+  $('make-video').addEventListener('click', async () => {
+    const button = $('make-video');
+    if (!draft.sound) return;
+    const type = videoType();
+    const canvasOK = !!HTMLCanvasElement.prototype.captureStream;
+    if (!type || !canvasOK) { say('card-status', 'This browser cannot make videos. Please try Chrome or Safari.'); return; }
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    const audio = new Ctx(); // made right on the tap so phones allow sound
+    button.disabled = true; say('card-status', 'Getting your video card ready…');
+    let timer = null, drawTimer = null;
+    try {
+      await audio.resume();
+      const music = await audio.decodeAudioData(await draft.sound.arrayBuffer());
+      const textNow = cardWords();
+      const mama = (voiceCache.blob && voiceCache.text === textNow) ? await audio.decodeAudioData(await voiceCache.blob.arrayBuffer()).catch(() => null) : null;
+      const seconds = Math.min(VIDEO_MAX, Math.max(music.duration, mama ? mama.duration + 1.5 : 0));
+      const pic = await cardPicture();
+      const img = await createImageBitmap(pic);
+      const width = 1080, height = Math.round(width * img.height / img.width / 2) * 2;
+      const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height;
+      const c2 = canvas.getContext('2d');
+      const draw = () => c2.drawImage(img, 0, 0, width, height);
+      draw(); drawTimer = setInterval(draw, 100);
+      const out = audio.createMediaStreamDestination();
+      const musicGain = audio.createGain(); musicGain.gain.value = 1;
+      const m = audio.createBufferSource(); m.buffer = music; m.connect(musicGain).connect(out);
+      const end = audio.currentTime + 0.3 + seconds;
+      musicGain.gain.setValueAtTime(1, end - 1.5); musicGain.gain.linearRampToValueAtTime(0, end);
+      let v = null;
+      if (mama) {
+        musicGain.gain.setValueAtTime(0.35, audio.currentTime + 0.3);
+        musicGain.gain.setValueAtTime(0.35, audio.currentTime + 0.3 + mama.duration);
+        musicGain.gain.linearRampToValueAtTime(1, audio.currentTime + 0.3 + mama.duration + 1);
+        musicGain.gain.setValueAtTime(1, end - 1.5); musicGain.gain.linearRampToValueAtTime(0, end);
+        v = audio.createBufferSource(); v.buffer = mama; v.connect(out);
+      }
+      const stream = new MediaStream([...canvas.captureStream(10).getVideoTracks(), ...out.stream.getAudioTracks()]);
+      const rec = new MediaRecorder(stream, {mimeType: type, videoBitsPerSecond: 2500000, audioBitsPerSecond: 128000});
+      const chunks = []; rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+      const done = new Promise(resolve => { rec.onstop = resolve; });
+      rec.start(1000);
+      const t0 = audio.currentTime + 0.3; m.start(t0, 0, seconds); if (v) v.start(t0);
+      let left = Math.ceil(seconds);
+      say('card-status', `Making your video card… ${left} seconds left. Please keep this page open.`);
+      timer = setInterval(() => { left = Math.max(0, left - 1); say('card-status', `Making your video card… ${left} seconds left. Please keep this page open.`); }, 1000);
+      await new Promise(resolve => setTimeout(resolve, (seconds + 0.6) * 1000));
+      rec.stop(); await done;
+      const blob = new Blob(chunks, {type: type.split(';')[0]});
+      if (!blob.size) throw Error('empty');
+      if (isPhone()) { showPhoneSave(blob, true); say('card-status', 'Your video card is ready.'); }
+      else { downloadBlob(blob, `${fileName('-video')}.${type.includes('mp4') ? 'mp4' : 'webm'}`); say('card-status', 'Your video card was downloaded. Look in your Downloads folder.'); }
+    } catch (e) {
+      say('card-status', 'The video did not work. Please try again, or try a different song.');
+    } finally {
+      clearInterval(timer); clearInterval(drawTimer); audio.close().catch(() => {}); button.disabled = false;
+    }
+  });
 })();

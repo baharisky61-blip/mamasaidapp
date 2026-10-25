@@ -179,6 +179,9 @@ body.zoomed .card-stage{width:min(94vw,calc((100vh - 170px) * 8 / 7));max-width:
 .phone-save h2{font-size:var(--fs-h2);margin-bottom:12px}
 .phone-save p{font-size:var(--fs-small)}
 .phone-save img{display:block;max-width:100%;max-height:52vh;margin:0 auto 12px;border-radius:6px;-webkit-touch-callout:default}
+.phone-save video{display:block;max-width:100%;max-height:52vh;margin:0 auto 12px;border-radius:6px;background:#000}
+.phone-save img[hidden],.phone-save video[hidden]{display:none}
+#make-video{margin-top:10px;width:100%}
 
 /* Laptops: two columns, Mama's help moves under the card */
 @media (max-width:1360px){
