@@ -5,15 +5,15 @@ const COUPON = 'MAMASAID_FOUNDER';
 let cache = { at: 0, left: TOTAL };
 
 module.exports = async function (context) {
-  const send = (left) => {
+  const send = (left, live) => {
     context.res = {
       headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=60' },
-      body: { left }
+      body: { left, live: !!live }
     };
   };
   const key = process.env.STRIPE_READ_KEY;
   if (!key) return send(TOTAL);
-  if (Date.now() - cache.at < 60000) return send(cache.left);
+  if (Date.now() - cache.at < 60000) return send(cache.left, true);
   try {
     const r = await fetch('https://api.stripe.com/v1/coupons/' + COUPON, {
       headers: { Authorization: 'Bearer ' + key }
@@ -23,7 +23,7 @@ module.exports = async function (context) {
     const max = c.max_redemptions || TOTAL;
     const left = Math.max(0, max - (c.times_redeemed || 0));
     cache = { at: Date.now(), left };
-    send(left);
+    send(left, true);
   } catch (e) {
     send(cache.left);
   }
