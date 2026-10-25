@@ -105,6 +105,10 @@
   .amount{font-family:'Fraunces',serif;font-size:44px;color:var(--plum);font-weight:700;margin:8px 0 4px}
   .amount small{font-size:18px;font-family:'Nunito',sans-serif;color:var(--muted);font-weight:600}
   .price p{color:var(--muted);font-size:16px}
+  .price .share-ask{margin-top:10px;color:var(--plum);font-weight:600}
+  .join-btn{display:inline-block;margin-top:18px;padding:14px 26px;border-radius:999px;background:var(--plum);color:#fff;font-weight:700;font-size:18px;text-decoration:none}
+  .join-btn.alt-btn{background:var(--gold-soft);color:var(--plum)}
+  .join-btn:hover{filter:brightness(1.1)}
 
   /* Footer */
   footer{padding:40px 0 50px;color:var(--muted);font-size:16px}
@@ -211,18 +215,21 @@
         <div class="price">
           <h3>Free trial</h3>
           <div class="amount">$0</div>
-          <p>7 days of encouragement and talking cards</p>
+          <p>7 days free to try everything</p>
         </div>
         <div class="price best">
-          <span class="tag">First 100 only</span>
+          <span class="tag"><span id="founder-left">50</span> founder spots left</span>
           <h3>Founders</h3>
           <div class="amount">$7.99<small> /month</small></div>
-          <p>Refer 5 friends to keep $7.99 for a full year</p>
+          <p>Your first year. Use code <strong>FOUNDER</strong> at checkout.</p>
+          <p class="share-ask">&#128155; Love Mama Said? Please share it with 1&ndash;2 friends.</p>
+          <a class="join-btn" href="https://buy.stripe.com/4gM4gz3CJ29d2mV9qxgbm0h">Start my free week</a>
         </div>
         <div class="price">
           <h3>Monthly</h3>
           <div class="amount">$14.99<small> /month</small></div>
-          <p>After the first 100 founders. Cancel anytime</p>
+          <p>After the 50 founder spots are gone. Cancel anytime.</p>
+          <a class="join-btn alt-btn" href="https://buy.stripe.com/4gM4gz3CJ29d2mV9qxgbm0h">Start my free week</a>
         </div>
       </div>
     </div>
@@ -252,6 +259,16 @@
 (function(){var b=document.getElementById('aunt-rose-play'),a=document.getElementById('aunt-rose-audio');if(!b||!a)return;var label=b.querySelector('span');
 b.addEventListener('click',function(){if(a.paused){a.play();label.textContent='Stop';b.setAttribute('aria-pressed','true');}else{a.pause();a.currentTime=0;label.textContent='Hear Mama say it';b.setAttribute('aria-pressed','false');}});
 a.addEventListener('ended',function(){label.textContent='Hear Mama say it';b.setAttribute('aria-pressed','false');});})();
+</script>
+<script>
+(function(){
+  var el=document.getElementById('founder-left'); if(!el) return;
+  fetch('/api/founders').then(function(r){return r.ok?r.json():null}).then(function(d){
+    if(!d||typeof d.left!=='number') return;
+    el.textContent=d.left;
+    if(d.left<=0){var t=el.parentNode; t.textContent='Founder spots are full';}
+  }).catch(function(){});
+})();
 </script>
 </body>
 </html>
