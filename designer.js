@@ -249,7 +249,10 @@
   $('card-sound').addEventListener('change', e => {
     const file = e.target.files[0]; e.target.value = '';
     if (!file) return;
-    if (!file.type.startsWith('audio/') || file.size > MAX_SOUND) { say('sound-status', 'Please choose a music or sound file of 15 MB or less.'); return; }
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    const isAudio = file.type.startsWith('audio/') || ['mp3','m4a','aac','wav','ogg','oga','flac','aif','aiff','caf','mp4'].includes(ext);
+    if (!isAudio) { say('sound-status', 'That file is not music. Please choose a song file (like .mp3 or .m4a).'); return; }
+    if (file.size > MAX_SOUND) { say('sound-status', 'That song is too big. Please choose one that is 15 MB or less.'); return; }
     draft.sound = file; draft.soundName = file.name; draft.soundKind = 'music';
     setSound(); save(); say('sound-status', 'Your music is on your card.');
   });
