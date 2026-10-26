@@ -249,3 +249,8 @@ body.zoomed .card-stage{width:min(94vw,calc((100vh - 170px) * 8 / 7));max-width:
 
 .help-footer{text-align:center;padding:18px 16px 28px;font-size:var(--fs-small);color:#fffcf5;text-shadow:0 1px 6px #072f43e6}
 .help-footer a{color:#fffcf5;font-weight:700}
+
+.speak-btn{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:12px 18px;border-radius:999px;border:2px solid var(--deep-ocean);background:#fff;color:var(--deep-ocean);font:700 var(--fs-label) var(--body);cursor:pointer}
+.speak-btn.listening{background:#c0392b;border-color:#c0392b;color:#fff;animation:speakPulse 1.2s ease-in-out infinite}
+@keyframes speakPulse{50%{box-shadow:0 0 0 8px #c0392b33}}
+@media(prefers-reduced-motion:reduce){.speak-btn.listening{animation:none}}

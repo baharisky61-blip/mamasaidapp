@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="studio-palette.css"><link rel="stylesheet" href="designer.css?v=onepage4">
 <script src="voice-config.js?v=3"></script>
-<script src="designer.js?v=send1" defer></script>
+<script src="designer.js?v=speak1" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#card-title">Skip to card design</a>
@@ -52,6 +52,8 @@
     <label for="card-message">Your Message</label>
     <textarea id="card-message" maxlength="500" rows="5" placeholder="Write what's on your heart…&#10;Mama Said will help you find the right words if you need inspiration."></textarea>
     <span class="counter" id="message-count" aria-hidden="true">0/500</span>
+    <button type="button" class="speak-btn" id="speak-message" hidden>🎤 Speak My Message</button>
+    <p id="speak-status" class="status" role="status" aria-live="polite"></p>
 
     <div class="button-row">
       <button type="button" class="primary quote" data-open="sayings">Mama's Sayings</button>

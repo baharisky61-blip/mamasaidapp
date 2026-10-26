@@ -638,4 +638,34 @@
     finally { button.disabled = false; }
   });
   updateSendHint();
+
+  /* ---------- Speak My Message: the phone/computer's own speech-to-text (free, no ElevenLabs credits) ---------- */
+  (function () {
+    const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const btn = $('speak-message'), box = $('card-message');
+    if (!Rec || !btn) return;
+    btn.hidden = false;
+    let rec = null, listening = false, base = '';
+    const stop = () => { listening = false; btn.classList.remove('listening'); btn.textContent = '🎤 Speak My Message'; };
+    btn.addEventListener('click', () => {
+      if (listening && rec) { rec.stop(); return; }
+      rec = new Rec(); rec.lang = 'en-US'; rec.continuous = true; rec.interimResults = true;
+      base = box.value.trim(); let finals = '';
+      rec.onresult = e => {
+        let interim = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const t = e.results[i][0].transcript;
+          if (e.results[i].isFinal) finals += (finals ? ' ' : '') + t.trim(); else interim += t;
+        }
+        let text = [base, finals, interim.trim()].filter(Boolean).join(' ');
+        text = text.charAt(0).toUpperCase() + text.slice(1);
+        box.value = text.slice(0, 500);
+        box.dispatchEvent(new Event('input', {bubbles:true}));
+      };
+      rec.onerror = e => { say('speak-status', e.error === 'not-allowed' || e.error === 'service-not-allowed' ? 'Please allow the microphone, then tap the button again.' : (e.error === 'no-speech' ? "I didn't hear anything. Tap and try again." : 'Listening stopped. Tap to try again.')); stop(); };
+      rec.onend = () => { if (listening) say('speak-status', 'Done. You can change any word.'); stop(); };
+      try { rec.start(); listening = true; btn.classList.add('listening'); btn.textContent = '■ Stop'; say('speak-status', 'Listening… talk now, then tap Stop.'); }
+      catch { say('speak-status', 'Listening did not start. Please try again.'); stop(); }
+    });
+  })();
 })();
