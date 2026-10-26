@@ -181,7 +181,11 @@ body.zoomed .card-stage{width:min(94vw,calc((100vh - 170px) * 8 / 7));max-width:
 .phone-save img{display:block;max-width:100%;max-height:52vh;margin:0 auto 12px;border-radius:6px;-webkit-touch-callout:default}
 .phone-save video{display:block;max-width:100%;max-height:52vh;margin:0 auto 12px;border-radius:6px;background:#000}
 .phone-save img[hidden],.phone-save video[hidden]{display:none}
-#make-video{margin-top:10px;width:100%}
+.send-card{display:block;margin:16px auto 4px;width:min(420px,100%);font-size:clamp(20px,2.4vw,24px);padding:16px 22px}
+.send-hint{text-align:center;color:#fffcf5;text-shadow:0 1px 6px #072f43e6;font-size:var(--fs-small);margin:0 0 6px}
+.more-save{color:#fffcf5;text-shadow:0 1px 6px #072f43e6;text-align:center}
+.more-save summary{cursor:pointer;font-weight:700;padding:8px 10px;list-style-position:inside}
+.more-save-list{display:flex;flex-direction:column;align-items:center;gap:4px}
 
 /* Laptops: two columns, Mama's help moves under the card */
 @media (max-width:1360px){
@@ -245,3 +249,8 @@ body.zoomed .card-stage{width:min(94vw,calc((100vh - 170px) * 8 / 7));max-width:
 
 .help-footer{text-align:center;padding:18px 16px 28px;font-size:var(--fs-small);color:#fffcf5;text-shadow:0 1px 6px #072f43e6}
 .help-footer a{color:#fffcf5;font-weight:700}
+
+.speak-btn{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:12px 18px;border-radius:999px;border:2px solid var(--deep-ocean);background:#fff;color:var(--deep-ocean);font:700 var(--fs-label) var(--body);cursor:pointer}
+.speak-btn.listening{background:#c0392b;border-color:#c0392b;color:#fff;animation:speakPulse 1.2s ease-in-out infinite}
+@keyframes speakPulse{50%{box-shadow:0 0 0 8px #c0392b33}}
+@media(prefers-reduced-motion:reduce){.speak-btn.listening{animation:none}}
