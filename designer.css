@@ -246,3 +246,6 @@ body.zoomed .card-stage{width:min(94vw,calc((100vh - 170px) * 8 / 7));max-width:
 .card.has-picture.ink-light.has-picture:not(.art-card) .card-ornament{color:#f6dfaa}
 .card.has-picture:not(.art-card) .card-signature{left:auto;right:3.4cqi;bottom:auto;top:3cqi;font-size:3.6cqi;color:#fffcf5;text-shadow:0 .3cqi 1.2cqi #000000a6}
 .segmented button{padding:6px 8px}
+
+.help-footer{text-align:center;padding:18px 16px 28px;font-size:var(--fs-small);color:#fffcf5;text-shadow:0 1px 6px #072f43e6}
+.help-footer a{color:#fffcf5;font-weight:700}
