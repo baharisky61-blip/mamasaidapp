@@ -2,7 +2,8 @@
   "globalHeaders": {
     "X-Content-Type-Options": "nosniff",
     "Referrer-Policy": "strict-origin-when-cross-origin",
-    "Permissions-Policy": "camera=(), microphone=(self), geolocation=()"
+    "Permissions-Policy": "camera=(), microphone=(self), geolocation=()",
+    "Cache-Control": "no-cache"
   },
   "platform": {
     "apiRuntime": "node:20"
