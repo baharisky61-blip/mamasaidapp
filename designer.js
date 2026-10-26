@@ -132,7 +132,7 @@
     card.className = ['card', `ink-${draft.ink}`, `size-${draft.size}`, `place-${draft.place}`, !picture && style.full ? 'full-style' : '', picture ? 'has-picture' : '', picture && draft.art ? 'art-card' : ''].join(' ').replace(/\s+/g, ' ').trim();
     $('card-mama').hidden = !draft.mama;
     $('card-sound-chip').hidden = !draft.sound;
-    $('make-video').hidden = !draft.sound;
+    updateSendHint();
     $('show-mama').checked = draft.mama;
     document.querySelectorAll('.style-tile').forEach(tile => tile.setAttribute('aria-checked', String(!picture && tile.dataset.style === draft.style)));
     document.querySelectorAll('.picture-tile').forEach(tile => tile.setAttribute('aria-pressed', String(picture && Number(tile.dataset.index) === draft.pictureIndex)));
@@ -513,7 +513,7 @@
     if (voiceCache.text === text && voiceCache.blob) return voiceCache.blob;
     const response = await fetch('/api/speak', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text}), signal: AbortSignal.timeout(45000)});
     if (!response.ok) { let m = "Mama couldn't speak just now. Please try again."; try { m = (await response.json()).message || m; } catch {} throw Error(m); }
-    const blob = await response.blob(); voiceCache = {text, blob}; return blob;
+    const blob = await response.blob(); voiceCache = {text, blob}; updateSendHint(); return blob;
   }
   $('hear-mama').addEventListener('click', async () => {
     const label = $('hear-mama-label');
@@ -561,9 +561,16 @@
     return ['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=avc1,mp4a','video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm']
       .find(t => { try { return MediaRecorder.isTypeSupported(t); } catch { return false; } }) || null;
   }
-  $('make-video').addEventListener('click', async () => {
-    const button = $('make-video');
-    if (!draft.sound) return;
+  function mamaReady() { return !!(voiceCache.blob && voiceCache.text === cardWords() && cardWords()); }
+  function updateSendHint() {
+    const hint = $('send-hint'); if (!hint) return;
+    const music = !!draft.sound; let mama = false; try { mama = mamaReady(); } catch {}
+    hint.textContent = music && mama ? "Sends a video with your music and Mama's voice."
+      : music ? (window.MAMA_VOICE_ON ? "Sends a video with your music. Tap Hear Mama first to add her voice." : 'Sends a video with your music.')
+      : mama ? "Sends a video with Mama's voice."
+      : (window.MAMA_VOICE_ON ? 'Sends your card as a picture. Add music or tap Hear Mama to send a video.' : 'Sends your card as a picture. Add music to send a video.');
+  }
+  async function makeVideo(button) {
     const type = videoType();
     const canvasOK = !!HTMLCanvasElement.prototype.captureStream;
     if (!type || !canvasOK) { say('card-status', 'This browser cannot make videos. Please try Chrome or Safari.'); return; }
@@ -573,10 +580,11 @@
     let timer = null, drawTimer = null;
     try {
       await audio.resume();
-      const music = await audio.decodeAudioData(await draft.sound.arrayBuffer());
+      const music = draft.sound ? await audio.decodeAudioData(await draft.sound.arrayBuffer()) : null;
       const textNow = cardWords();
       const mama = (voiceCache.blob && voiceCache.text === textNow) ? await audio.decodeAudioData(await voiceCache.blob.arrayBuffer()).catch(() => null) : null;
-      const seconds = Math.min(VIDEO_MAX, Math.max(music.duration, mama ? mama.duration + 1.5 : 0));
+      if (!music && !mama) throw Error('nothing');
+      const seconds = Math.min(VIDEO_MAX, Math.max(music ? music.duration : 0, mama ? mama.duration + 1.5 : 0));
       const pic = await cardPicture();
       const img = await createImageBitmap(pic);
       const width = 1080, height = Math.round(width * img.height / img.width / 2) * 2;
@@ -586,7 +594,7 @@
       draw(); drawTimer = setInterval(draw, 100);
       const out = audio.createMediaStreamDestination();
       const musicGain = audio.createGain(); musicGain.gain.value = 1;
-      const m = audio.createBufferSource(); m.buffer = music; m.connect(musicGain).connect(out);
+      let m = null; if (music) { m = audio.createBufferSource(); m.buffer = music; m.connect(musicGain).connect(out); }
       const end = audio.currentTime + 0.3 + seconds;
       musicGain.gain.setValueAtTime(1, end - 1.5); musicGain.gain.linearRampToValueAtTime(0, end);
       let v = null;
@@ -602,7 +610,7 @@
       const chunks = []; rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
       const done = new Promise(resolve => { rec.onstop = resolve; });
       rec.start(1000);
-      const t0 = audio.currentTime + 0.3; m.start(t0, 0, seconds); if (v) v.start(t0);
+      const t0 = audio.currentTime + 0.3; if (m) m.start(t0, 0, seconds); if (v) v.start(t0);
       let left = Math.ceil(seconds);
       say('card-status', `Making your video card… ${left} seconds left. Please keep this page open.`);
       timer = setInterval(() => { left = Math.max(0, left - 1); say('card-status', `Making your video card… ${left} seconds left. Please keep this page open.`); }, 1000);
@@ -617,5 +625,17 @@
     } finally {
       clearInterval(timer); clearInterval(drawTimer); audio.close().catch(() => {}); button.disabled = false;
     }
+  }
+  $('send-card').addEventListener('click', async () => {
+    const button = $('send-card');
+    if (draft.sound || mamaReady()) return makeVideo(button);
+    button.disabled = true; say('card-status', 'Getting your card ready…');
+    try {
+      const blob = await cardPicture();
+      if (isPhone()) { showPhoneSave(blob); say('card-status', ''); }
+      else { downloadBlob(blob, `${fileName()}.png`); say('card-status', 'Your card was downloaded. Look in your Downloads folder.'); }
+    } catch { say('card-status', 'That did not work. Please try again.'); }
+    finally { button.disabled = false; }
   });
+  updateSendHint();
 })();
