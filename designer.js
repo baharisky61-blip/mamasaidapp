@@ -461,16 +461,23 @@
     if (zoomed) setZoom(false);
     card.classList.add('exporting');
     try {
-      const canvas = await window.html2canvas(card, {scale: 1600 / card.clientWidth, backgroundColor: null, useCORS: true, logging: false});
-      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-      if (!blob) throw Error('no picture');
-      return blob;
+      // Phones have memory limits, so if a big picture fails, try smaller sizes (and JPEG) before giving up.
+      let lastError = null;
+      for (const [size, kind] of [[1600, 'image/png'], [1100, 'image/png'], [800, 'image/jpeg']]) {
+        try {
+          const canvas = await window.html2canvas(card, {scale: size / card.clientWidth, backgroundColor: kind === 'image/jpeg' ? '#ffffff' : null, useCORS: true, logging: false});
+          const blob = await new Promise(resolve => canvas.toBlob(resolve, kind, 0.92));
+          canvas.width = canvas.height = 0;
+          if (blob && blob.size) return blob;
+        } catch (e) { lastError = e; }
+      }
+      throw lastError || Error('no picture');
     } finally { card.classList.remove('exporting'); if (zoomed) setZoom(true); }
   }
   const phoneSave = $('phone-save');
   let phoneFiles = [], phoneURL = null;
   function showPhoneSave(blob, video = false, extras = null, videoFailed = false) {
-    const ext = video ? (blob.type.includes('mp4') ? 'mp4' : 'webm') : 'png';
+    const ext = video ? (blob.type.includes('mp4') ? 'mp4' : 'webm') : (blob.type === 'image/jpeg' ? 'jpg' : 'png');
     const main = new File([blob], `${fileName(video ? '-video' : '')}.${ext}`, {type: blob.type || (video ? 'video/mp4' : 'image/png')});
     const more = extras || (video ? [] : [soundFile()].filter(Boolean));
     phoneFiles = more.length && navigator.canShare && navigator.canShare({files:[main, ...more]}) ? [main, ...more] : [main];
