@@ -483,6 +483,7 @@
     $('phone-save-title').textContent = video ? 'Your video card is ready' : 'Save your card';
     $('phone-share').textContent = video ? 'Save or Send My Video' : 'Save or Send My Card';
     $('phone-share').hidden = !canShare;
+    const dl = $('phone-save-download'); dl.href = phoneURL; dl.download = main.name; dl.hidden = !video;
     const apple = /iPhone|iPad|iPod|Macintosh/i.test(navigator.userAgent);
     const hold = video ? 'press play to watch it.' : (apple ? 'press and hold the picture, then tap "Save to Photos."' : 'press and hold the picture, then tap "Download image."');
     $('phone-save-help').textContent = canShare ? `Tap the button to save or send it${phoneFiles.length > 1 ? ' with your sound' : ''}. Or ${hold}` : hold[0].toUpperCase() + hold.slice(1);
@@ -490,7 +491,7 @@
   }
   $('phone-share').addEventListener('click', async () => {
     try { await navigator.share({files: phoneFiles, title: 'My Mama Said card'}); }
-    catch (e) { if (e.name !== 'AbortError') $('phone-save-help').textContent = 'Press and hold the picture, then choose save.'; }
+    catch (e) { if (e.name !== 'AbortError') $('phone-save-help').textContent = $('phone-save-video').hidden ? 'Press and hold the picture, then tap "Save to Photos."' : 'Tap "Download it instead," then use the share button to save the video.'; }
   });
   $('phone-save-done').addEventListener('click', () => { $('phone-save-video').pause(); phoneSave.close(); });
   $('download-card').addEventListener('click', async () => {
@@ -666,6 +667,17 @@
       rec.onend = () => { if (listening) say('speak-status', 'Done. You can change any word.'); stop(); };
       try { rec.start(); listening = true; btn.classList.add('listening'); btn.textContent = '■ Stop'; say('speak-status', 'Listening… talk now, then tap Stop.'); }
       catch { say('speak-status', 'Listening did not start. Please try again.'); stop(); }
+    });
+  })();
+
+  /* ---------- In-app browsers (Google app, Facebook, Instagram…) often cannot save files: ask to open in Safari/Chrome ---------- */
+  (function () {
+    const ua = navigator.userAgent;
+    if (!/GSA\/|FBAN|FBAV|FB_IAB|Instagram|Line\/|Snapchat|musical_ly|TikTok|Pinterest|LinkedInApp|Twitter|MicroMessenger/i.test(ua)) return;
+    const b = $('inapp-banner'); if (!b) return; b.hidden = false;
+    $('inapp-copy').addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText('https://www.mamasaidapp.com/designer.html'); $('inapp-copy').textContent = 'Copied! Paste it in Safari'; }
+      catch { $('inapp-copy').textContent = 'www.mamasaidapp.com'; }
     });
   })();
 })();

@@ -254,3 +254,8 @@ body.zoomed .card-stage{width:min(94vw,calc((100vh - 170px) * 8 / 7));max-width:
 .speak-btn.listening{background:#c0392b;border-color:#c0392b;color:#fff;animation:speakPulse 1.2s ease-in-out infinite}
 @keyframes speakPulse{50%{box-shadow:0 0 0 8px #c0392b33}}
 @media(prefers-reduced-motion:reduce){.speak-btn.listening{animation:none}}
+
+.inapp-banner{background:#93601F;color:#fffcf5;padding:12px 16px;font-size:17px;line-height:1.45;text-align:center}
+.inapp-banner button{margin-left:8px;border:2px solid #fffcf5;background:transparent;color:#fffcf5;border-radius:999px;padding:4px 14px;font:700 15px var(--body);cursor:pointer}
+#phone-save-download{display:block;text-align:center;margin:8px 0;text-decoration:none;font-weight:700;color:var(--deep-ocean)}
+#phone-save-download[hidden]{display:none}

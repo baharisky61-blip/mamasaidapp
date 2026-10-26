@@ -6,12 +6,13 @@
 <meta name="description" content="Design a Mama Said card that speaks from the heart.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="studio-palette.css"><link rel="stylesheet" href="designer.css?v=oct26">
+<link rel="stylesheet" href="studio-palette.css"><link rel="stylesheet" href="designer.css?v=oct26b">
 <script src="voice-config.js?v=3"></script>
-<script src="designer.js?v=oct26" defer></script>
+<script src="designer.js?v=oct26b" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#card-title">Skip to card design</a>
+<div id="inapp-banner" class="inapp-banner" hidden role="alert"><strong>To save your card to your phone, open Mama Said in Safari.</strong> Tap the <b>⋯</b> or <b>share</b> button and choose <b>Open in Safari</b> (or Open in Browser). <button type="button" id="inapp-copy">Copy link</button></div>
 <header class="designer-header">
   <a href="index.html" class="brand" aria-label="Mama Said home">Mama Said<span>A little love goes a long way</span></a>
   <nav aria-label="Main menu">
@@ -185,6 +186,7 @@
   <h2 id="phone-save-title">Save your card</h2>
   <button type="button" class="primary wide" id="phone-share">Save or Send My Card</button>
   <p id="phone-save-help"></p>
+  <a id="phone-save-download" class="outline wide" hidden>Download it instead</a>
   <img id="phone-save-image" alt="Your finished Mama Said card">
   <video id="phone-save-video" controls playsinline hidden></video>
   <button type="button" class="outline wide" id="phone-save-done">Done</button>
