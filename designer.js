@@ -469,11 +469,11 @@
   }
   const phoneSave = $('phone-save');
   let phoneFiles = [], phoneURL = null;
-  function showPhoneSave(blob, video = false) {
+  function showPhoneSave(blob, video = false, extras = null, videoFailed = false) {
     const ext = video ? (blob.type.includes('mp4') ? 'mp4' : 'webm') : 'png';
     const main = new File([blob], `${fileName(video ? '-video' : '')}.${ext}`, {type: blob.type || (video ? 'video/mp4' : 'image/png')});
-    const sound = video ? null : soundFile();
-    phoneFiles = sound && navigator.canShare && navigator.canShare({files:[main, sound]}) ? [main, sound] : [main];
+    const more = extras || (video ? [] : [soundFile()].filter(Boolean));
+    phoneFiles = more.length && navigator.canShare && navigator.canShare({files:[main, ...more]}) ? [main, ...more] : [main];
     const canShare = !!(navigator.canShare && navigator.canShare({files: phoneFiles}));
     if (phoneURL) URL.revokeObjectURL(phoneURL);
     phoneURL = URL.createObjectURL(blob);
@@ -487,6 +487,7 @@
     const apple = /iPhone|iPad|iPod|Macintosh/i.test(navigator.userAgent);
     const hold = video ? 'press play to watch it.' : (apple ? 'press and hold the picture, then tap "Save to Photos."' : 'press and hold the picture, then tap "Download image."');
     $('phone-save-help').textContent = canShare ? `Tap the button to save or send it${phoneFiles.length > 1 ? ' with your sound' : ''}. Or ${hold}` : hold[0].toUpperCase() + hold.slice(1);
+    if (videoFailed) $('phone-save-help').textContent = (phoneFiles.length > 1 ? "This phone couldn't make a video, so your card is ready as a picture, with the sound included. " : "This phone couldn't make a video, so your card is ready as a picture. ") + $('phone-save-help').textContent;
     phoneSave.showModal();
   }
   $('phone-share').addEventListener('click', async () => {
@@ -574,11 +575,11 @@
   async function makeVideo(button) {
     const type = videoType();
     const canvasOK = !!HTMLCanvasElement.prototype.captureStream;
-    if (!type || !canvasOK) { say('card-status', 'This browser cannot make videos. Please try Chrome or Safari.'); return; }
+    if (!type || !canvasOK) return sendPicture(button, true);
     const Ctx = window.AudioContext || window.webkitAudioContext;
     const audio = new Ctx(); // made right on the tap so phones allow sound
     button.disabled = true; say('card-status', 'Getting your video card ready…');
-    let timer = null, drawTimer = null;
+    let timer = null, drawTimer = null, cleanup = () => {}, failed = false;
     try {
       await audio.resume();
       const music = draft.sound ? await audio.decodeAudioData(await draft.sound.arrayBuffer()) : null;
@@ -587,9 +588,11 @@
       if (!music && !mama) throw Error('nothing');
       const seconds = Math.min(VIDEO_MAX, Math.max(music ? music.duration : 0, mama ? mama.duration + 1.5 : 0));
       const pic = await cardPicture();
-      const img = await createImageBitmap(pic);
+      const img = await new Promise((resolve, reject) => { const i = new Image(); i.onload = () => resolve(i); i.onerror = reject; i.src = URL.createObjectURL(pic); });
       const width = 1080, height = Math.round(width * img.height / img.width / 2) * 2;
       const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height;
+      canvas.style.cssText = 'position:fixed;left:0;top:0;width:2px;height:2px;opacity:0;pointer-events:none';
+      document.body.appendChild(canvas); cleanup = () => canvas.remove();
       const c2 = canvas.getContext('2d');
       const draw = () => c2.drawImage(img, 0, 0, width, height);
       draw(); drawTimer = setInterval(draw, 100);
@@ -616,27 +619,41 @@
       say('card-status', `Making your video card… ${left} seconds left. Please keep this page open.`);
       timer = setInterval(() => { left = Math.max(0, left - 1); say('card-status', `Making your video card… ${left} seconds left. Please keep this page open.`); }, 1000);
       await new Promise(resolve => setTimeout(resolve, (seconds + 0.6) * 1000));
+      try { rec.requestData(); } catch {}
       rec.stop(); await done;
       const blob = new Blob(chunks, {type: type.split(';')[0]});
       if (!blob.size) throw Error('empty');
       if (isPhone()) { showPhoneSave(blob, true); say('card-status', 'Your video card is ready.'); }
       else { downloadBlob(blob, `${fileName('-video')}.${type.includes('mp4') ? 'mp4' : 'webm'}`); say('card-status', 'Your video card was downloaded. Look in your Downloads folder.'); }
     } catch (e) {
-      say('card-status', 'The video did not work. Please try again, or try a different song.');
+      failed = true;
     } finally {
-      clearInterval(timer); clearInterval(drawTimer); audio.close().catch(() => {}); button.disabled = false;
+      clearInterval(timer); clearInterval(drawTimer); cleanup(); audio.close().catch(() => {}); button.disabled = false;
     }
+    if (failed) return sendPicture(button, true);
+  }
+  // Picture card. If a video could not be made on this phone, the picture is sent with the music and Mama's voice as extra files.
+  async function sendPicture(button, videoFailed = false) {
+    button.disabled = true; say('card-status', 'Getting your card ready…');
+    try {
+      const blob = await cardPicture();
+      const extras = [];
+      if (videoFailed) {
+        const music = soundFile(); if (music) extras.push(music);
+        if (mamaReady()) extras.push(new File([voiceCache.blob], `${fileName('-mama-voice')}.mp3`, {type: voiceCache.blob.type || 'audio/mpeg'}));
+      }
+      if (isPhone()) { showPhoneSave(blob, false, extras, videoFailed); say('card-status', ''); }
+      else {
+        downloadBlob(blob, `${fileName()}.png`); extras.forEach(f => downloadBlob(f, f.name));
+        say('card-status', videoFailed ? 'Your card and its sound were downloaded as separate files. Look in your Downloads folder.' : 'Your card was downloaded. Look in your Downloads folder.');
+      }
+    } catch { say('card-status', 'Something went wrong making your card. Please tap Send My Card again.'); }
+    finally { button.disabled = false; }
   }
   $('send-card').addEventListener('click', async () => {
     const button = $('send-card');
     if (draft.sound || mamaReady()) return makeVideo(button);
-    button.disabled = true; say('card-status', 'Getting your card ready…');
-    try {
-      const blob = await cardPicture();
-      if (isPhone()) { showPhoneSave(blob); say('card-status', ''); }
-      else { downloadBlob(blob, `${fileName()}.png`); say('card-status', 'Your card was downloaded. Look in your Downloads folder.'); }
-    } catch { say('card-status', 'That did not work. Please try again.'); }
-    finally { button.disabled = false; }
+    return sendPicture(button);
   });
   updateSendHint();
 
