@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How to Use Mama Said</title>
+<meta name="description" content="Simple steps to make, save and send a Mama Said card, and to talk with Mama.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="studio-palette.css">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Nunito',system-ui,sans-serif;font-size:20px;line-height:1.6;color:var(--ink);background:var(--deep-ocean) url('assets/lotus-water.png') center/cover fixed no-repeat;min-height:100vh}
+  a{color:var(--ocean)}
+  header{background:#fffcf5f2;border-bottom:1px solid var(--champagne)}
+  header .wrap{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-top:14px;padding-bottom:14px;flex-wrap:wrap}
+  .logo{font-family:'Fraunces',serif;font-style:italic;font-weight:700;font-size:30px;color:var(--metallic-gold);text-decoration:none}
+  .top-links{display:flex;gap:18px;flex-wrap:wrap}
+  .top-links a{font-weight:700;text-decoration:none}
+  .wrap{max-width:900px;margin:0 auto;padding:0 16px}
+  main .wrap{padding-top:28px;padding-bottom:40px}
+  .panel{background:#fffcf5f2;border:1px solid var(--champagne);border-radius:24px;padding:28px;margin-bottom:22px;box-shadow:0 14px 34px #072f4326}
+  .hello{display:flex;gap:22px;align-items:center}
+  .hello img{width:120px;height:120px;border-radius:50%;object-fit:cover;flex-shrink:0;border:4px solid var(--champagne)}
+  h1{font-family:'Fraunces',serif;font-size:clamp(30px,5vw,42px);line-height:1.15;color:var(--deep-ocean);margin-bottom:6px}
+  h2{font-family:'Fraunces',serif;font-size:clamp(24px,3.6vw,30px);color:var(--deep-ocean);margin-bottom:12px}
+  h3{font-size:21px;color:var(--ocean);margin:16px 0 6px}
+  .say{font-family:'Fraunces',serif;font-style:italic;font-size:22px;color:var(--metallic-gold)}
+  .big-buttons{display:flex;gap:14px;flex-wrap:wrap;margin-top:20px}
+  .btn{display:inline-block;padding:16px 26px;border-radius:999px;font-weight:700;font-size:20px;text-decoration:none;text-align:center;background:var(--deep-ocean);color:#fffcf5;border:2px solid var(--deep-ocean)}
+  .btn.light{background:#fff;color:var(--deep-ocean)}
+  .btn:hover{filter:brightness(1.12)}
+  ol.steps{list-style:none;counter-reset:s}
+  ol.steps>li{counter-increment:s;position:relative;padding-left:62px;margin-bottom:22px}
+  ol.steps>li::before{content:counter(s);position:absolute;left:0;top:0;width:44px;height:44px;border-radius:50%;background:var(--champagne);color:var(--deep-ocean);font-weight:700;font-size:22px;display:flex;align-items:center;justify-content:center}
+  ol.steps strong{color:var(--deep-ocean)}
+  ul.tips{margin:6px 0 0 22px}
+  ul.tips li{margin-bottom:6px}
+  .box{background:var(--shell);border-radius:16px;padding:16px 20px;margin-top:10px}
+  .note{font-size:18px;color:var(--muted)}
+  footer{text-align:center;color:#fffcf5;text-shadow:0 1px 6px #072f43;padding:10px 16px 36px}
+  footer a{color:#fffcf5;font-weight:700}
+  @media(max-width:600px){body{font-size:19px;background-attachment:scroll}.hello{flex-direction:column;text-align:center}.panel{padding:22px 18px}.btn{width:100%}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a href="index.html" class="logo">Mama Said</a>
+    <nav class="top-links" aria-label="Main menu">
+      <a href="designer.html">Make a Card</a>
+      <a href="index.html">Talk with Mama</a>
+      <a href="mailto:hello@mamasaidapp.com?subject=Mama%20Said%20help">Help</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+
+    <section class="panel">
+      <div class="hello">
+        <img src="mama.jpg" alt="Mama, smiling">
+        <div>
+          <h1 id="welcome-title">How to use Mama Said</h1>
+          <p class="say">"Come on in, baby. I'll show you around."</p>
+        </div>
+      </div>
+      <div class="big-buttons">
+        <a class="btn" href="designer.html">Make My First Card</a>
+        <a class="btn light" href="index.html">Talk with Mama</a>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="make-title">
+      <h2 id="make-title">Make a card</h2>
+      <ol class="steps">
+        <li><strong>Pick a picture.</strong> Use the arrows under the card to flip through pictures, or pick one under <em>Card Pictures</em>. To use your own photo, tap <strong>Choose File</strong>.</li>
+        <li><strong>Write your message.</strong> Type in the <em>Your Message</em> box, or tap <strong>🎤 Speak My Message</strong> and just talk. Tap <strong>Stop</strong> when you're done.
+          <div class="box note">Need the right words? Tap <strong>Mama's Sayings</strong> or <strong>Get Inspiration</strong>.</div></li>
+        <li><strong>Add music (optional).</strong> Tap <strong>Upload Music</strong> and choose a song from your phone or computer. On an iPhone, tap <strong>Browse</strong> at the bottom to find songs saved in iCloud Drive or Files. Tap <strong>▶ Play sound</strong> on the card to hear it.</li>
+        <li><strong>Let Mama read it (optional).</strong> Tap <strong>Hear Mama</strong> under the card. Once she has read it, her voice goes into your video card too.</li>
+      </ol>
+    </section>
+
+    <section class="panel" aria-labelledby="send-title">
+      <h2 id="send-title">Save or send your card</h2>
+      <ol class="steps">
+        <li><strong>Tap 📤 Send My Card</strong> under the card.
+          <ul class="tips">
+            <li>If your card has <strong>music or Mama's voice</strong>, it becomes a <strong>video card</strong>. Wait for the countdown and keep the page open. It takes as long as the song, up to 60 seconds.</li>
+            <li>If not, it becomes a <strong>picture</strong>.</li>
+          </ul>
+        </li>
+        <li><strong>On a phone:</strong> tap <strong>Save or Send My Card</strong> (or <strong>My Video</strong>). A sheet slides up from the bottom.
+          <ul class="tips">
+            <li>To <strong>send it</strong>: tap <strong>Messages</strong>, <strong>Mail</strong> or another app, pick the person, and send.</li>
+            <li>To <strong>keep it</strong>: scroll down and tap <strong>Save Image</strong> or <strong>Save Video</strong>. It goes to your <strong>Photos</strong> app. Look under <strong>Recents</strong>, at the very bottom.</li>
+          </ul>
+        </li>
+        <li><strong>On a computer:</strong> the card saves to your <strong>Downloads</strong> folder. To email it, start a new email, click the <strong>📎 paperclip</strong>, open <strong>Downloads</strong>, and choose your card.</li>
+      </ol>
+      <p class="note">Only want the picture, without music? Tap <strong>More options</strong> under the card, then <strong>Download the picture only</strong>.</p>
+      <p class="note">Want to finish later? Tap <strong>Save to My Cards</strong>. Find it again under <strong>My Cards</strong> at the top of the card page.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="talk-title">
+      <h2 id="talk-title">Talk with Mama</h2>
+      <ol class="steps">
+        <li>Go to the <a href="index.html">home page</a> and <strong>tap Mama's face</strong>.</li>
+        <li>If asked, tap <strong>Allow</strong> so Mama can hear you. Then tell her what's on your heart.</li>
+        <li>Each visit lasts up to <strong>3 minutes</strong>. To talk again, just tap her face to start a new visit.</li>
+      </ol>
+    </section>
+
+    <section class="panel" aria-labelledby="home-title">
+      <h2 id="home-title">Put Mama Said on your phone</h2>
+      <ol class="steps">
+        <li><strong>iPhone:</strong> open <strong>www.mamasaidapp.com</strong> in Safari, tap the <strong>Share</strong> button (the square with an arrow pointing up), then <strong>Add to Home Screen</strong>.</li>
+        <li><strong>Android:</strong> open it in Chrome, tap the <strong>⋮</strong> menu at the top right, then <strong>Add to Home screen</strong>.</li>
+      </ol>
+      <p class="note">Now Mama is one tap away, just like an app.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="help-title">
+      <h2 id="help-title">Need help, baby?</h2>
+      <p>Email us at <a href="mailto:hello@mamasaidapp.com?subject=Mama%20Said%20help">hello@mamasaidapp.com</a> and we'll get back to you.</p>
+      <div class="big-buttons">
+        <a class="btn" href="designer.html">Make My First Card</a>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer>Mama Said is a product of DowMeno LLC, Oklahoma. · <a href="mailto:hello@mamasaidapp.com?subject=Mama%20Said%20help">hello@mamasaidapp.com</a></footer>
+</body>
+</html>
