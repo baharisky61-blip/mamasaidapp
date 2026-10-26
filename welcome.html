@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="studio-palette.css">
+<script src="voice-config.js?v=3"></script>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Nunito',system-ui,sans-serif;font-size:20px;line-height:1.6;color:var(--ink);background:var(--deep-ocean) url('assets/lotus-water.png') center/cover fixed no-repeat;min-height:100vh}
@@ -22,6 +23,7 @@
   main .wrap{padding-top:28px;padding-bottom:40px}
   .panel{background:#fffcf5f2;border:1px solid var(--champagne);border-radius:24px;padding:28px;margin-bottom:22px;box-shadow:0 14px 34px #072f4326}
   .hello{display:flex;gap:22px;align-items:center}
+  .face{border:0;background:none;padding:0;border-radius:50%;flex-shrink:0}
   .hello img{width:120px;height:120px;border-radius:50%;object-fit:cover;flex-shrink:0;border:4px solid var(--champagne)}
   h1{font-family:'Fraunces',serif;font-size:clamp(30px,5vw,42px);line-height:1.15;color:var(--deep-ocean);margin-bottom:6px}
   h2{font-family:'Fraunces',serif;font-size:clamp(24px,3.6vw,30px);color:var(--deep-ocean);margin-bottom:12px}
@@ -30,6 +32,10 @@
   .big-buttons{display:flex;gap:14px;flex-wrap:wrap;margin-top:20px}
   .btn{display:inline-block;padding:16px 26px;border-radius:999px;font-weight:700;font-size:20px;text-decoration:none;text-align:center;background:var(--deep-ocean);color:#fffcf5;border:2px solid var(--deep-ocean)}
   .btn.light{background:#fff;color:var(--deep-ocean)}
+  button.btn{font-family:inherit;cursor:pointer}
+  .btn.mama-talk-button{font-size:20px!important;padding:6px 22px 6px 6px!important;gap:10px}
+  .btn.mama-talk-button img{width:46px;height:46px}
+  .voice-off .voice-only{display:none!important}
   .btn:hover{filter:brightness(1.12)}
   ol.steps{list-style:none;counter-reset:s}
   ol.steps>li{counter-increment:s;position:relative;padding-left:62px;margin-bottom:22px}
@@ -50,7 +56,7 @@
     <a href="index.html" class="logo">Mama Said</a>
     <nav class="top-links" aria-label="Main menu">
       <a href="designer.html">Make a Card</a>
-      <a href="index.html">Talk with Mama</a>
+      <a href="index.html">Home</a>
       <a href="mailto:hello@mamasaidapp.com?subject=Mama%20Said%20help">Help</a>
     </nav>
   </div>
@@ -61,15 +67,16 @@
 
     <section class="panel">
       <div class="hello">
-        <img src="mama.jpg" alt="Mama, smiling">
+        <button type="button" class="face" data-talk-to-mama aria-label="Talk with Mama"><img src="mama.jpg" alt="Mama, smiling"></button>
         <div>
           <h1 id="welcome-title">How to use Mama Said</h1>
           <p class="say">"Come on in, baby. I'll show you around."</p>
+          <p class="note voice-only" data-talk-status role="status" aria-live="polite"></p>
         </div>
       </div>
       <div class="big-buttons">
         <a class="btn" href="designer.html">Make My First Card</a>
-        <a class="btn light" href="index.html">Talk with Mama</a>
+        <button type="button" class="btn light mama-talk-button voice-only" data-talk-to-mama><img src="mama.jpg" alt=""><span class="mama-talk-label">Talk with Mama</span></button>
       </div>
     </section>
 
@@ -108,7 +115,7 @@
     <section class="panel" aria-labelledby="talk-title">
       <h2 id="talk-title">Talk with Mama</h2>
       <ol class="steps">
-        <li>Go to the <a href="index.html">home page</a> and <strong>tap Mama's face</strong>.</li>
+        <li>Tap <strong>Talk with Mama</strong> at the top of this page, or <strong>tap Mama's face</strong> on the <a href="index.html">home page</a>. You can ask her how to use the app, too.</li>
         <li>If asked, tap <strong>Allow</strong> so Mama can hear you. Then tell her what's on your heart.</li>
         <li>Each visit lasts up to <strong>3 minutes</strong>. To talk again, just tap her face to start a new visit.</li>
       </ol>
