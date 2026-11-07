@@ -835,9 +835,12 @@
   /* ---------- Four easy steps: Picture, Words, Sound, Send. The card stays in view the whole time. ---------- */
   const stepNames = ['Picture', 'Words', 'Sound', 'Send'];
   let step = 1;
+  document.querySelectorAll('a[href="#suggestions-title"]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); showStep(2, false); requestAnimationFrame(() => $('suggestions-title').scrollIntoView({block:'start', behavior:'smooth'})); }));
   function showStep(n, scroll = true) {
     step = Math.min(4, Math.max(1, n));
     document.querySelectorAll('.step').forEach(el => { el.hidden = Number(el.dataset.step) !== step; });
+    // Mama's Sayings and Suggestions only show on the Words step.
+    document.body.dataset.step = String(step);
     document.querySelectorAll('[data-goto]').forEach(b => {
       const k = Number(b.dataset.goto);
       b.setAttribute('aria-current', k === step ? 'step' : 'false');
