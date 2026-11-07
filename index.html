@@ -186,16 +186,7 @@
   </section>
 
   <section>
-    <div class="wrap cards">
-      <div class="card-demo">
-        <div class="to">A talking card for Aunt Rose</div>
-        <div class="msg">"Your brain already knows what you need. First, you have to accept that you need it."</div>
-        <button type="button" class="play" id="aunt-rose-play" aria-pressed="false">
-          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 2.5v11l9-5.5z"/></svg>
-          <span>Hear Mama say it</span>
-        </button>
-        <audio id="aunt-rose-audio" src="assets/aunt-rose-mama.mp3" preload="none"></audio>
-      </div>
+    <div class="wrap">
       <div>
         <h2>Talking cards with heart</h2>
         <p class="sub">Send a card that speaks. Mama reads your message out loud, so the people you love can hear it, not just read it.</p>
@@ -256,12 +247,6 @@
   <!-- ElevenLabs Grants badge and link go here once the grant is approved -->
 </footer>
 
-<script>
-// Aunt Rose sample: a saved recording of Mama, so it never uses ElevenLabs credits.
-(function(){var b=document.getElementById('aunt-rose-play'),a=document.getElementById('aunt-rose-audio');if(!b||!a)return;var label=b.querySelector('span');
-b.addEventListener('click',function(){if(a.paused){a.play();label.textContent='Stop';b.setAttribute('aria-pressed','true');}else{a.pause();a.currentTime=0;label.textContent='Hear Mama say it';b.setAttribute('aria-pressed','false');}});
-a.addEventListener('ended',function(){label.textContent='Hear Mama say it';b.setAttribute('aria-pressed','false');});})();
-</script>
 <script>
 (function(){
   var el=document.getElementById('founder-left'); if(!el) return;
