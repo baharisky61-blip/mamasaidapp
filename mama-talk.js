@@ -1,5 +1,5 @@
 // Talk with Mama: tap Mama's face to start a voice conversation, tap again to say goodbye.
-// Replaces the ElevenLabs corner box. The talking library only loads on the first tap.
+// Replaces the ElevenLabs corner box. A consent notice must be accepted first; the talking library only loads after that.
 (function () {
   'use strict';
   var AGENT_ID = window.MAMA_AGENT_ID;
@@ -11,9 +11,13 @@
     speaking: 'Mama is talking…',
     goodbye: 'Goodbye for now, baby. Tap her face anytime.',
     mic: 'Mama needs your microphone. Tap Allow, then tap her face again.',
-    error: "Mama couldn't come to the phone just now. Please try again."
+    error: "Mama couldn't come to the phone just now. Please try again.",
+    declined: "That's alright, baby. Tap Mama's face if you change your mind."
   };
   var conversation = null, starting = false, library = null, targets = [], statusEls = [];
+  // Visitors must tap Agree before the microphone or Mama starts. Bump CONSENT_VERSION if the notice changes.
+  var CONSENT_KEY = 'mamaSaidConsent', CONSENT_VERSION = '2026-11-07';
+  var consentGiven = false, consentBox = null;
 
   var style = document.createElement('style');
   style.textContent = [
@@ -28,6 +32,17 @@
     '.mama-talk-status{text-align:center;font-weight:700;color:#0B4057;margin:14px auto 0;max-width:22em;background:#fffcf5eb;padding:6px 16px;border-radius:999px;box-shadow:0 4px 14px #072f431f}',
     '.mama-talk-button{display:inline-flex;align-items:center;gap:8px;border-radius:999px!important;padding:4px 14px 4px 4px!important;background:#0B4057!important;color:#FFFCF5!important;border-color:#0B4057!important}',
     '.mama-talk-button img{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #E3CAA0}',
+    '.mama-consent{position:fixed;inset:0;margin:auto;height:fit-content;border:0;border-radius:22px;padding:0;max-width:min(30em,calc(100vw - 32px));background:#FFFCF5;color:#15394A;box-shadow:0 20px 60px #072f4366;font-size:18px;line-height:1.5}',
+    '.mama-consent::backdrop{background:#072f43b3}',
+    '.mama-consent .mc-in{padding:24px 24px 20px;max-height:80vh;overflow:auto}',
+    '.mama-consent img{width:72px;height:72px;border-radius:50%;object-fit:cover;border:3px solid #E3CAA0;display:block;margin:0 auto 10px}',
+    '.mama-consent h2{margin:0 0 10px;text-align:center;color:#0B4057;font-size:24px}',
+    '.mama-consent p{margin:0 0 10px}',
+    '.mama-consent a{color:#14788A;font-weight:700}',
+    '.mama-consent .mc-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:16px}',
+    '.mama-consent button{font:inherit;font-weight:700;border-radius:999px;padding:12px 26px;cursor:pointer;border:2px solid #0B4057}',
+    '.mama-consent .mc-agree{background:#0B4057;color:#FFFCF5}',
+    '.mama-consent .mc-no{background:transparent;color:#0B4057}',
     '.mama-talk-button[data-talk-state=listening],.mama-talk-button[data-talk-state=speaking]{background:#93601F!important;border-color:#93601F!important}'
   ].join('\n');
   document.head.appendChild(style);
@@ -54,6 +69,53 @@
     statusEls.forEach(function (el) { el.textContent = words; });
   }
 
+  function hasConsent() {
+    if (consentGiven) return true;
+    try { return localStorage.getItem(CONSENT_KEY) === CONSENT_VERSION; } catch (e) { return false; }
+  }
+
+  function saveConsent() {
+    consentGiven = true;
+    try { localStorage.setItem(CONSENT_KEY, CONSENT_VERSION); } catch (e) {}
+  }
+
+  // Shows the notice and calls done(true) only when the visitor taps Agree.
+  function askConsent(done) {
+    if (!consentBox) {
+      consentBox = document.createElement('dialog');
+      consentBox.className = 'mama-consent';
+      consentBox.setAttribute('aria-labelledby', 'mama-consent-title');
+      consentBox.innerHTML =
+        '<div class="mc-in"><img src="mama.jpg" alt="">' +
+        '<h2 id="mama-consent-title">Before we talk, baby</h2>' +
+        '<p>Welcome to Mama Said! Here\'s a little information about your privacy.</p>' +
+        '<p>Mama Said uses AI technology powered by ElevenLabs. When you talk with Mama, your voice conversation is recorded, processed and stored to provide this service.</p>' +
+        '<p>By tapping <strong>Agree</strong>, you consent to this as described in our <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</p>' +
+        '<p>If you prefer not to have your conversation recorded, tap <strong>No thanks</strong>. You can still make cards without talking to Mama.</p>' +
+        '<div class="mc-btns"><button type="button" class="mc-no">No thanks</button><button type="button" class="mc-agree">Agree</button></div></div>';
+      document.body.appendChild(consentBox);
+    }
+    var agree = consentBox.querySelector('.mc-agree'), no = consentBox.querySelector('.mc-no');
+    function finish(ok) {
+      agree.onclick = no.onclick = null; consentBox.oncancel = null;
+      if (consentBox.open) consentBox.close();
+      done(ok);
+    }
+    agree.onclick = function () { saveConsent(); finish(true); };
+    no.onclick = function () { finish(false); };
+    consentBox.oncancel = function (e) { e.preventDefault(); finish(false); };
+    if (consentBox.showModal) consentBox.showModal(); else consentBox.setAttribute('open', '');
+    agree.focus();
+  }
+
+  function onTap() {
+    if (conversation || starting || hasConsent()) { toggle(); return; }
+    askConsent(function (ok) {
+      if (ok) toggle();
+      else setState('idle', WORDS.declined);
+    });
+  }
+
   async function toggle() {
     if (starting) return;
     if (conversation) {
@@ -62,6 +124,7 @@
       try { await ending.endSession(); } catch (e) {}
       return;
     }
+    if (!hasConsent()) return; // never start without Agree
     starting = true;
     setState('connecting', WORDS.connecting);
     try {
@@ -107,7 +170,7 @@
     }
     statusEls = Array.prototype.slice.call(document.querySelectorAll('[data-talk-status]'));
     if (!statusEls.length) statusEls = Array.prototype.slice.call(document.querySelectorAll('.designer-header [role=status]'));
-    targets.forEach(function (target) { target.addEventListener('click', toggle); });
+    targets.forEach(function (target) { target.addEventListener('click', onTap); });
     setState('idle', WORDS.idle);
     window.addEventListener('pagehide', function () { if (conversation) conversation.endSession(); });
   }
