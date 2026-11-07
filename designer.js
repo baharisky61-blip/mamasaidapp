@@ -50,7 +50,7 @@
   ];
 
   /* ---------- Draft ---------- */
-  const fresh = () => ({version:3, title:'A note for you', message:'', style:'lotus', image:null, imageName:'', pictureIndex:-1, art:false, ink:'dark', size:'normal', place:'bottom', wordX:0, wordY:0, mama:false, sound:null, soundName:'', soundKind:'',
+  const fresh = () => ({version:3, title:'A note for you', message:'', closing:'Love,', signName:'', style:'lotus', image:null, imageName:'', pictureIndex:-1, art:false, ink:'dark', size:'normal', place:'bottom', wordX:0, wordY:0, mama:false, sound:null, soundName:'', soundKind:'',
     font:'script', color:'', picFit:'fill', picZoom:100, picX:100, picY:50, picBg:'#fbf6ec', volume:100});
   const fonts = [
     {id:'script', name:'Fancy script', sample:"'Great Vibes',cursive"},
@@ -98,6 +98,8 @@
     const d = fresh();
     if (typeof value.title === 'string') d.title = value.title.slice(0, 80);
     if (typeof value.message === 'string') d.message = value.message.slice(0, 500);
+    if (typeof value.closing === 'string') d.closing = value.closing.slice(0, 40);
+    if (typeof value.signName === 'string') d.signName = value.signName.slice(0, 40);
     if (value.image instanceof Blob && value.image.size <= MAX_IMAGE) { d.image = value.image; d.imageName = typeof value.imageName === 'string' ? value.imageName : 'Your picture'; }
     if (typeof value.mama === 'boolean') d.mama = value.version === 3 ? value.mama : false;
     if (value.version === 3) {
@@ -153,6 +155,11 @@
     $('card-script').textContent = script;
     $('card-message-text').textContent = draft.message || 'Your message will appear here, right on the card.';
     $('card-message-text').classList.toggle('placeholder', !draft.message);
+    // "Love, Nelcea" — shows once she types her name.
+    const closing = draft.closing.trim(), name = draft.signName.trim();
+    $('card-from').hidden = !name;
+    $('card-from').textContent = name ? (closing ? `${/[,.!:;-]$/.test(closing) ? closing : closing + ','} ${name}` : name) : '';
+    document.querySelectorAll('.closing-pick').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.closing === draft.closing)));
     card.style.backgroundImage = picture ? `url("${imageURL}")` : style.bg;
     if (picture) {
       // The picture's size and place are written as plain percentages, so the saved card matches the screen.
@@ -229,12 +236,16 @@
   function populate() {
     $('card-title').value = draft.title;
     $('card-message').value = draft.message;
+    $('card-closing').value = draft.closing; $('card-name').value = draft.signName;
     setImageURL(); setSound(); render();
   }
 
   /* ---------- Controls ---------- */
   $('card-title').addEventListener('input', e => { draft.title = e.target.value; save(); });
   $('card-message').addEventListener('input', e => { draft.message = e.target.value; save(); });
+  $('card-closing').addEventListener('input', e => { draft.closing = e.target.value; save(); });
+  $('card-name').addEventListener('input', e => { draft.signName = e.target.value; save(); });
+  document.querySelectorAll('.closing-pick').forEach(b => b.addEventListener('click', () => { draft.closing = b.dataset.closing; $('card-closing').value = draft.closing; save(); if (!draft.signName) $('card-name').focus(); }));
   $('show-mama').addEventListener('change', e => { draft.mama = e.target.checked; save(); });
   // Step 1: move and size the picture
   const resetPicture = () => { draft.picFit = 'fill'; draft.picZoom = 100; draft.picX = 100; draft.picY = 50; };

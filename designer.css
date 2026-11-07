@@ -339,3 +339,18 @@ body.zoomed .card-stage{width:min(94vw,calc((100vh - 170px) * 8 / 7));max-width:
   .designer-header nav::-webkit-scrollbar{display:none}
   .site-search{flex:1 1 100%;min-width:0}
 }
+
+/* Sign your card */
+.sign-box{border:1px solid var(--panel-line);border-radius:14px;padding:12px 14px 14px;margin:14px 0 6px}
+.sign-box legend{font:600 var(--fs-body,18px) var(--heading);color:var(--deep-ocean);padding:0 6px}
+.sign-box input{width:100%;min-height:var(--target);border:1px solid var(--panel-line);border-radius:12px;padding:8px 12px;font:inherit;background:#fff;margin-bottom:8px}
+.sign-box .hint{font-weight:400;color:var(--muted);font-size:var(--fs-small)}
+.closing-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.closing-pick{border:1px solid var(--panel-line);background:#fff;border-radius:999px;padding:8px 14px;font:600 var(--fs-small) var(--body);color:var(--deep-ocean);cursor:pointer;min-height:40px}
+.closing-pick[aria-pressed=true]{background:var(--deep-ocean);color:#fffcf5;border-color:var(--deep-ocean)}
+.card-from{margin:1.6cqi 0 0;font:400 4.4cqi/1.2 var(--script);font-size:calc(4.4cqi * var(--ss,1))}
+.card.wc .card-from{color:var(--wc)!important}
+
+/* Mama Said mark: tiny and soft, so the card is clearly from the sender */
+.card .card-signature,.card.has-picture:not(.art-card) .card-signature{top:auto;left:auto;right:2.4cqi;bottom:1.8cqi;font-size:2.4cqi;opacity:.4;color:#fffcf5;text-shadow:none}
+.card:not(.has-picture):not(.ink-light) .card-signature{color:var(--gold-ink)}

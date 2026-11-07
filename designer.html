@@ -6,9 +6,9 @@
 <meta name="description" content="Design a Mama Said card that speaks from the heart.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Dancing+Script:wght@500;600&family=Playfair+Display:ital,wght@0,500;1,500&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="studio-palette.css"><link rel="stylesheet" href="designer.css?v=steps2">
+<link rel="stylesheet" href="studio-palette.css"><link rel="stylesheet" href="designer.css?v=steps3">
 <script src="voice-config.js?v=3"></script>
-<script src="designer.js?v=steps2" defer></script>
+<script src="designer.js?v=steps3" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#card-title">Skip to card design</a>
@@ -97,6 +97,19 @@
       <label for="card-message">Your Message</label>
       <textarea id="card-message" maxlength="500" rows="5" placeholder="Write what's on your heart…&#10;Mama Said will help you find the right words if you need inspiration."></textarea>
       <span class="counter" id="message-count" aria-hidden="true">0/500</span>
+      <fieldset class="sign-box">
+        <legend>Sign your card</legend>
+        <div class="closing-row" role="group" aria-label="Pick a closing">
+          <button type="button" class="closing-pick" data-closing="Love,">Love,</button>
+          <button type="button" class="closing-pick" data-closing="From,">From,</button>
+          <button type="button" class="closing-pick" data-closing="With love,">With love,</button>
+          <button type="button" class="closing-pick" data-closing="Your friend,">Your friend,</button>
+        </div>
+        <label for="card-closing">Closing words <span class="hint">(type your own if you like)</span></label>
+        <input id="card-closing" type="text" maxlength="40" autocomplete="off" placeholder="Love,">
+        <label for="card-name">Your name</label>
+        <input id="card-name" type="text" maxlength="40" autocomplete="name" placeholder="Your name">
+      </fieldset>
       <button type="button" class="speak-btn" id="speak-message" hidden>🎤 Speak My Message</button>
       <p id="speak-status" class="status" role="status" aria-live="polite"></p>
 
@@ -190,6 +203,7 @@
           <h2 class="card-script" id="card-script"></h2>
           <div class="card-ornament" aria-hidden="true"><span></span><i>♥</i><span></span></div>
           <p class="card-message" id="card-message-text"></p>
+          <p class="card-from" id="card-from" hidden></p>
         </div>
         <img id="card-mama" class="card-mama" src="mama.jpg" alt="" hidden>
         <span class="card-signature">Mama Said</span>
