@@ -50,7 +50,7 @@
   ];
 
   /* ---------- Draft ---------- */
-  const fresh = () => ({version:3, title:'A note for you', message:'', style:'lotus', image:null, imageName:'', pictureIndex:-1, art:false, ink:'dark', size:'normal', place:'bottom', mama:false, sound:null, soundName:'', soundKind:'',
+  const fresh = () => ({version:3, title:'A note for you', message:'', style:'lotus', image:null, imageName:'', pictureIndex:-1, art:false, ink:'dark', size:'normal', place:'bottom', wordX:0, wordY:0, mama:false, sound:null, soundName:'', soundKind:'',
     font:'script', color:'', picFit:'fill', picZoom:100, picX:100, picY:50, picBg:'#fbf6ec', volume:100});
   const fonts = [
     {id:'script', name:'Fancy script', sample:"'Great Vibes',cursive"},
@@ -114,6 +114,7 @@
       d.volume = num(value.volume, 10, 100, 100);
       if (picBackgrounds.includes(value.picBg)) d.picBg = value.picBg;
       if (['left','right','bottom'].includes(value.place)) d.place = value.place;
+      d.wordX = num(value.wordX, -100, 100, 0); d.wordY = num(value.wordY, -100, 100, 0);
       if (value.sound instanceof Blob && value.sound.size <= MAX_SOUND) { d.sound = value.sound; d.soundName = String(value.soundName || 'Your sound'); d.soundKind = value.soundKind === 'voice' ? 'voice' : 'music'; }
     } else {
       const map = {ocean:'ocean', turquoise:'ocean', plum:'royal', gold:'gold', champagne:'gold', pearl:'pearl', ivory:'ivory', blush:'pearl', rosewood:'gold'};
@@ -183,6 +184,8 @@
     say('title-count', `${draft.title.length}/80`);
     say('message-count', `${draft.message.length}/500`);
     say('image-name', draft.image && draft.pictureIndex < 0 ? draft.imageName : 'No file chosen');
+    card.querySelector('.card-words').style.transform = (draft.wordX || draft.wordY) ? `translate(${(draft.wordX * card.clientWidth / 100).toFixed(1)}px, ${(draft.wordY * card.clientWidth / 100).toFixed(1)}px)` : '';
+    $('words-reset').hidden = !(draft.wordX || draft.wordY);
     card.setAttribute('aria-label', `Card preview: ${draft.title || 'A note for you'}. ${draft.message}`);
     fitWords();
   }
@@ -260,7 +263,38 @@
     $('color-row').append(wrap);
   });
   document.querySelectorAll('[data-size]').forEach(b => b.addEventListener('click', () => { draft.size = b.dataset.size; save(); }));
-  document.querySelectorAll('[data-place]').forEach(b => b.addEventListener('click', () => { draft.place = b.dataset.place; if (draft.image && !draft.art) setImageURL(true); save(); }));
+
+  // Press and drag the words to move them anywhere on the card. Saved as a share of the card's width, so it matches on every screen.
+  (() => {
+    const words = card.querySelector('.card-words');
+    let start = null;
+    words.addEventListener('pointerdown', e => {
+      if (e.button > 0) return;
+      e.preventDefault();
+      start = {x: e.clientX, y: e.clientY, wx: draft.wordX, wy: draft.wordY, id: e.pointerId};
+      try { words.setPointerCapture(e.pointerId); } catch {}
+      words.classList.add('dragging');
+    });
+    words.addEventListener('pointermove', e => {
+      if (!start || e.pointerId !== start.id) return;
+      const w = card.clientWidth || 1;
+      let nx = start.wx + (e.clientX - start.x) / w * 100, ny = start.wy + (e.clientY - start.y) / w * 100;
+      // Keep the words on the card.
+      words.style.transform = '';
+      const c = card.getBoundingClientRect(), r = words.getBoundingClientRect();
+      const minX = (c.left - r.left) / w * 100, maxX = (c.right - r.right) / w * 100;
+      const minY = (c.top - r.top) / w * 100, maxY = (c.bottom - r.bottom) / w * 100;
+      nx = Math.min(Math.max(nx, Math.min(minX, 0)), Math.max(maxX, 0));
+      ny = Math.min(Math.max(ny, Math.min(minY, 0)), Math.max(maxY, 0));
+      draft.wordX = Math.round(nx * 10) / 10; draft.wordY = Math.round(ny * 10) / 10;
+      words.style.transform = `translate(${(draft.wordX * w / 100).toFixed(1)}px, ${(draft.wordY * w / 100).toFixed(1)}px)`;
+    });
+    const end = e => { if (!start || e.pointerId !== start.id) return; start = null; words.classList.remove('dragging'); render(); save(); say('card-status', 'Words moved. Tap "Put words back" to undo.'); };
+    words.addEventListener('pointerup', end); words.addEventListener('pointercancel', end);
+    $('words-reset').addEventListener('click', () => { draft.wordX = 0; draft.wordY = 0; render(); save(); });
+    window.addEventListener('resize', () => render());
+  })();
+  document.querySelectorAll('[data-place]').forEach(b => b.addEventListener('click', () => { draft.place = b.dataset.place; draft.wordX = 0; draft.wordY = 0; if (draft.image && !draft.art) setImageURL(true); save(); }));
 
   styles.forEach(style => {
     const tile = document.createElement('button');
@@ -529,6 +563,12 @@
     const zoomed = document.body.classList.contains('zoomed');
     if (zoomed) setZoom(false);
     card.classList.add('exporting');
+    // The picture maker can't draw moved words, so pin them in place with plain positions while it works.
+    const words = card.querySelector('.card-words'), moved = !!words.style.transform;
+    if (moved) {
+      const c = card.getBoundingClientRect(), r = words.getBoundingClientRect(), b = parseFloat(getComputedStyle(card).borderLeftWidth) || 0;
+      words.style.cssText += `;transform:none;inset:auto;margin:0;top:${r.top - c.top - b}px;left:${r.left - c.left - b}px;width:${r.width}px;height:${r.height}px;max-height:none`;
+    }
     try {
       // Phones have memory limits, so if a big picture fails, try smaller sizes (and JPEG) before giving up.
       let lastError = null;
@@ -541,7 +581,7 @@
         } catch (e) { lastError = e; }
       }
       throw lastError || Error('no picture');
-    } finally { card.classList.remove('exporting'); if (zoomed) setZoom(true); }
+    } finally { card.classList.remove('exporting'); if (moved) { words.removeAttribute('style'); render(); } if (zoomed) setZoom(true); }
   }
   const phoneSave = $('phone-save');
   let phoneFiles = [], phoneURL = null;

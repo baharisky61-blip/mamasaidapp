@@ -313,3 +313,29 @@ body.zoomed .card-stage{width:min(94vw,calc((100vh - 170px) * 8 / 7));max-width:
 .card.wc-light .card-words,.card.wc-light .card-script{text-shadow:0 .2cqi .5cqi #000000d9,0 0 1.4cqi #000000a6!important}
 .card.wc-dark .card-words,.card.wc-dark .card-script{text-shadow:0 0 1.2cqi #fffaf2,0 0 .4cqi #fffaf2!important}
 @media (max-width:899px){.steps-nav b{width:30px;height:30px}.step-buttons .primary{flex:1}}
+
+/* Drag the words anywhere on the card */
+.card-words{cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none}
+.card-words.dragging{cursor:grabbing;outline:2px dashed #fffcf5cc;outline-offset:4px;border-radius:8px}
+.words-tip{margin:12px 0 6px;font-size:var(--fs-small);color:var(--muted)}
+.words-reset{width:100%;margin-top:4px}
+
+/* Smaller top bar, more room for the card */
+.designer-header{padding:4px 24px;gap:6px 18px}
+.brand{font-size:30px;line-height:1}
+.brand span{display:none}
+.designer-header nav{gap:2px 14px}
+.designer-header nav a,.nav-link{font-size:calc(15px * var(--ui-scale));padding:4px 0;min-height:36px}
+.site-search{flex:0 1 200px}
+.site-search input[type=search]{min-height:36px;padding:4px 12px 4px 38px}
+.text-size select{min-height:34px;padding:2px 6px}
+.designer-header .mama-talk-button{font-size:15px!important;padding:3px 14px 3px 3px!important;min-height:36px!important}
+.designer-header .mama-talk-button img{width:30px!important;height:30px!important}
+.studio{padding-top:14px}
+@media (max-width:899px){
+  .designer-header{padding:6px 14px;gap:4px 14px}
+  .brand{font-size:28px}
+  .designer-header nav{gap:0 16px;flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;scrollbar-width:none}
+  .designer-header nav::-webkit-scrollbar{display:none}
+  .site-search{flex:1 1 100%;min-width:0}
+}
