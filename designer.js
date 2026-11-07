@@ -426,8 +426,14 @@
     $('suggestion-list').append(button);
   });
   function offer(s, button) {
-    chosen = s.words; $('suggestion-words').textContent = s.words; $('suggestion-offer').hidden = false;
+    const box = $('suggestion-offer');
+    // Tapping the same one again closes it.
+    if (button && button.getAttribute('aria-pressed') === 'true' && !box.hidden) { box.hidden = true; button.setAttribute('aria-pressed', 'false'); return; }
+    chosen = s.words; $('suggestion-words').textContent = s.words; box.hidden = false;
+    // Mama's words open right under the button that was tapped.
+    if (button) button.after(box);
     document.querySelectorAll('.suggestion').forEach(b => b.setAttribute('aria-pressed', String(b === button)));
+    box.scrollIntoView({block:'nearest', behavior:'smooth'});
   }
   function addWords(words, where = 'card-status') {
     const next = draft.message + (draft.message ? '\n\n' : '') + words;
@@ -829,9 +835,12 @@
   /* ---------- Four easy steps: Picture, Words, Sound, Send. The card stays in view the whole time. ---------- */
   const stepNames = ['Picture', 'Words', 'Sound', 'Send'];
   let step = 1;
+  document.querySelectorAll('a[href="#suggestions-title"]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); showStep(2, false); requestAnimationFrame(() => $('suggestions-title').scrollIntoView({block:'start', behavior:'smooth'})); }));
   function showStep(n, scroll = true) {
     step = Math.min(4, Math.max(1, n));
     document.querySelectorAll('.step').forEach(el => { el.hidden = Number(el.dataset.step) !== step; });
+    // Mama's Sayings and Suggestions only show on the Words step.
+    document.body.dataset.step = String(step);
     document.querySelectorAll('[data-goto]').forEach(b => {
       const k = Number(b.dataset.goto);
       b.setAttribute('aria-current', k === step ? 'step' : 'false');
