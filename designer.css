@@ -354,3 +354,4 @@ body.zoomed .card-stage{width:min(94vw,calc((100vh - 170px) * 8 / 7));max-width:
 /* Mama Said mark: tiny and soft, so the card is clearly from the sender */
 .card .card-signature,.card.has-picture:not(.art-card) .card-signature{top:auto;left:auto;right:2.4cqi;bottom:1.8cqi;font-size:2.4cqi;opacity:.4;color:#fffcf5;text-shadow:none}
 .card:not(.has-picture):not(.ink-light) .card-signature{color:var(--gold-ink)}
+.suggestion-list .suggestion-offer{margin-top:0}

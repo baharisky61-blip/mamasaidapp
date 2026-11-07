@@ -426,8 +426,14 @@
     $('suggestion-list').append(button);
   });
   function offer(s, button) {
-    chosen = s.words; $('suggestion-words').textContent = s.words; $('suggestion-offer').hidden = false;
+    const box = $('suggestion-offer');
+    // Tapping the same one again closes it.
+    if (button && button.getAttribute('aria-pressed') === 'true' && !box.hidden) { box.hidden = true; button.setAttribute('aria-pressed', 'false'); return; }
+    chosen = s.words; $('suggestion-words').textContent = s.words; box.hidden = false;
+    // Mama's words open right under the button that was tapped.
+    if (button) button.after(box);
     document.querySelectorAll('.suggestion').forEach(b => b.setAttribute('aria-pressed', String(b === button)));
+    box.scrollIntoView({block:'nearest', behavior:'smooth'});
   }
   function addWords(words, where = 'card-status') {
     const next = draft.message + (draft.message ? '\n\n' : '') + words;
