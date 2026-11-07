@@ -50,7 +50,24 @@
   ];
 
   /* ---------- Draft ---------- */
-  const fresh = () => ({version:3, title:'A note for you', message:'', style:'lotus', image:null, imageName:'', pictureIndex:-1, art:false, ink:'dark', size:'normal', place:'bottom', mama:false, sound:null, soundName:'', soundKind:''});
+  const fresh = () => ({version:3, title:'A note for you', message:'', style:'lotus', image:null, imageName:'', pictureIndex:-1, art:false, ink:'dark', size:'normal', place:'bottom', mama:false, sound:null, soundName:'', soundKind:'',
+    font:'script', color:'', picFit:'fill', picZoom:100, picX:100, picY:50, picBg:'#fbf6ec', volume:100});
+  const fonts = [
+    {id:'script', name:'Fancy script', sample:"'Great Vibes',cursive"},
+    {id:'classic', name:'Classic', sample:"'Cormorant Garamond',Georgia,serif"},
+    {id:'elegant', name:'Elegant', sample:"'Playfair Display',Georgia,serif"},
+    {id:'handwritten', name:'Handwritten', sample:"'Dancing Script',cursive"},
+    {id:'modern', name:'Simple', sample:"'Nunito',system-ui,sans-serif"}
+  ];
+  const wordColors = [
+    {id:'', name:'Mama picks', hex:'linear-gradient(135deg,#14262f 50%,#fffcf5 50%)'},
+    {id:'black', name:'Black', hex:'#151515', tone:'dark'},
+    {id:'white', name:'White', hex:'#ffffff', tone:'light'},
+    {id:'gold', name:'Gold', hex:'#d6a84a', tone:'light'},
+    {id:'blue', name:'Blue', hex:'#123f73', tone:'dark'},
+    {id:'red', name:'Deep red', hex:'#7d1128', tone:'dark'}
+  ];
+  const picBackgrounds = ['#fbf6ec','#ffffff','#111111','#0b2f4a','#d8b46a','#6e1022','#f3d6d2'];
   let draft = fresh();
   let db = null;
   const MAX_IMAGE = 10 * 1024 * 1024, MAX_SOUND = 15 * 1024 * 1024;
@@ -88,7 +105,14 @@
       if (Number.isInteger(value.pictureIndex)) d.pictureIndex = value.pictureIndex;
       d.art = !!value.art && !!d.image;
       if (['dark','light'].includes(value.ink)) d.ink = value.ink;
-      if (['normal','large'].includes(value.size)) d.size = value.size;
+      if (['small','normal','large'].includes(value.size)) d.size = value.size;
+      if (fonts.some(f => f.id === value.font)) d.font = value.font;
+      if (wordColors.some(c => c.id === value.color)) d.color = value.color;
+      if (['fill','fit'].includes(value.picFit)) d.picFit = value.picFit;
+      const num = (v, lo, hi, dflt) => Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : dflt;
+      d.picZoom = num(value.picZoom, 50, 250, 100); d.picX = num(value.picX, 0, 100, 100); d.picY = num(value.picY, 0, 100, 50);
+      d.volume = num(value.volume, 10, 100, 100);
+      if (picBackgrounds.includes(value.picBg)) d.picBg = value.picBg;
       if (['left','right','bottom'].includes(value.place)) d.place = value.place;
       if (value.sound instanceof Blob && value.sound.size <= MAX_SOUND) { d.sound = value.sound; d.soundName = String(value.soundName || 'Your sound'); d.soundKind = value.soundKind === 'voice' ? 'voice' : 'music'; }
     } else {
@@ -129,14 +153,31 @@
     $('card-message-text').textContent = draft.message || 'Your message will appear here, right on the card.';
     $('card-message-text').classList.toggle('placeholder', !draft.message);
     card.style.backgroundImage = picture ? `url("${imageURL}")` : style.bg;
-    card.className = ['card', `ink-${draft.ink}`, `size-${draft.size}`, `place-${draft.place}`, !picture && style.full ? 'full-style' : '', picture ? 'has-picture' : '', picture && draft.art ? 'art-card' : ''].join(' ').replace(/\s+/g, ' ').trim();
+    if (picture) {
+      // The picture's size and place are written as plain percentages, so the saved card matches the screen.
+      const cardRatio = 8 / 7, r = imgRatio || cardRatio;
+      const fill = draft.picFit === 'fill';
+      const base = fill ? (r > cardRatio ? r / cardRatio * 100 : 100) : (r > cardRatio ? 100 : r / cardRatio * 100);
+      card.style.backgroundSize = `${(base * draft.picZoom / 100).toFixed(2)}% auto`;
+      card.style.backgroundPosition = `${draft.picX}% ${draft.picY}%`;
+      card.style.backgroundColor = draft.picBg;
+    } else { card.style.backgroundSize = ''; card.style.backgroundPosition = ''; card.style.backgroundColor = ''; }
+    const wc = wordColors.find(c => c.id === draft.color && c.id);
+    card.style.setProperty('--wc', wc ? wc.hex : '');
+    card.className = ['card', `ink-${draft.ink}`, `size-${draft.size}`, `place-${draft.place}`, `font-${draft.font}`, wc ? `wc wc-${wc.tone}` : '', !picture && style.full ? 'full-style' : '', picture ? 'has-picture' : '', picture && draft.art ? 'art-card' : ''].join(' ').replace(/\s+/g, ' ').trim();
+    $('picture-controls').hidden = !picture;
+    document.querySelectorAll('[data-fit]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.fit === draft.picFit)));
+    $('pic-zoom').value = draft.picZoom; $('pic-x').value = draft.picX; $('pic-y').value = draft.picY;
+    document.querySelectorAll('.pic-bg').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.bg === draft.picBg)));
+    document.querySelectorAll('.font-choice').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.font === draft.font)));
+    document.querySelectorAll('.word-color').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.color === draft.color)));
+    $('sound-volume').value = draft.volume;
     $('card-mama').hidden = !draft.mama;
     $('card-sound-chip').hidden = !draft.sound;
     updateSendHint();
     $('show-mama').checked = draft.mama;
     document.querySelectorAll('.style-tile').forEach(tile => tile.setAttribute('aria-checked', String(!picture && tile.dataset.style === draft.style)));
     document.querySelectorAll('.picture-tile').forEach(tile => tile.setAttribute('aria-pressed', String(picture && Number(tile.dataset.index) === draft.pictureIndex)));
-    document.querySelectorAll('[data-ink]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.ink === draft.ink)));
     document.querySelectorAll('[data-size]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.size === draft.size)));
     document.querySelectorAll('[data-place]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.place === draft.place)));
     say('title-count', `${draft.title.length}/80`);
@@ -152,15 +193,16 @@
     let size = parseFloat(getComputedStyle(message).fontSize), floor = card.clientWidth * 0.022;
     while (words.scrollHeight > words.clientHeight + 1 && size > floor) { size -= 0.5; message.style.fontSize = `${size}px`; }
   }
-  let imageWide = false;
+  let imageWide = false, imgRatio = 0;
   // When a new photo goes on the card, pick light or dark words to match the picture where the words sit.
   function setImageURL(chooseInk = false) {
     if (imageURL) URL.revokeObjectURL(imageURL);
     imageURL = draft.image ? URL.createObjectURL(draft.image) : null;
-    imageWide = false;
+    imageWide = false; imgRatio = 0;
     if (imageURL) { const probe = new Image(); const url = imageURL; probe.onload = () => {
       if (url !== imageURL) return;
-      imageWide = probe.naturalWidth / probe.naturalHeight > 8 / 7;
+      imgRatio = probe.naturalWidth / probe.naturalHeight;
+      imageWide = imgRatio > 8 / 7;
       if (chooseInk && !draft.art) {
         try {
           const c = document.createElement('canvas'); c.width = 40; c.height = 35; const g = c.getContext('2d');
@@ -177,6 +219,7 @@
     if (soundURL) URL.revokeObjectURL(soundURL);
     soundURL = draft.sound ? URL.createObjectURL(draft.sound) : null;
     $('sound-box').hidden = !draft.sound;
+    $('sound-player').volume = draft.volume / 100;
     if (draft.sound) { $('sound-player').src = soundURL; say('sound-name', `${draft.soundKind === 'voice' ? '🎙 Your voice' : '♪ Your music'}: ${draft.soundName}`); }
     else $('sound-player').removeAttribute('src');
   }
@@ -190,7 +233,32 @@
   $('card-title').addEventListener('input', e => { draft.title = e.target.value; save(); });
   $('card-message').addEventListener('input', e => { draft.message = e.target.value; save(); });
   $('show-mama').addEventListener('change', e => { draft.mama = e.target.checked; save(); });
-  document.querySelectorAll('[data-ink]').forEach(b => b.addEventListener('click', () => { draft.ink = b.dataset.ink; save(); }));
+  // Step 1: move and size the picture
+  const resetPicture = () => { draft.picFit = 'fill'; draft.picZoom = 100; draft.picX = 100; draft.picY = 50; };
+  document.querySelectorAll('[data-fit]').forEach(b => b.addEventListener('click', () => { draft.picFit = b.dataset.fit; if (draft.picFit === 'fit') { draft.picX = 50; draft.picY = 50; } save(); }));
+  [['pic-zoom','picZoom'],['pic-x','picX'],['pic-y','picY']].forEach(([id, key]) => $(id).addEventListener('input', e => { draft[key] = Number(e.target.value); save(); }));
+  $('pic-center').addEventListener('click', () => { draft.picZoom = 100; draft.picX = 50; draft.picY = 50; save(); say('card-status', 'Your picture is centered.'); });
+  picBackgrounds.forEach(hex => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'swatch pic-bg'; b.dataset.bg = hex; b.style.background = hex;
+    b.setAttribute('aria-label', `Color behind the picture: ${hex}`); b.title = 'Color behind the picture';
+    b.addEventListener('click', () => { draft.picBg = hex; if (draft.picFit === 'fill' && draft.picZoom >= 100) draft.picFit = 'fit'; save(); });
+    $('pic-bg-row').append(b);
+  });
+  // Step 2: writing style and word color
+  fonts.forEach(f => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'font-choice'; b.dataset.font = f.id;
+    b.innerHTML = `<span style="font-family:${f.sample}">Love</span><small>${f.name}</small>`;
+    b.addEventListener('click', () => { draft.font = f.id; save(); });
+    $('font-row').append(b);
+  });
+  wordColors.forEach(c => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'swatch word-color'; b.dataset.color = c.id; b.style.background = c.hex;
+    b.setAttribute('aria-label', c.name); b.title = c.name;
+    const tag = document.createElement('small'); tag.textContent = c.name;
+    const wrap = document.createElement('span'); wrap.className = 'swatch-wrap'; wrap.append(b, tag);
+    b.addEventListener('click', () => { draft.color = c.id; save(); });
+    $('color-row').append(wrap);
+  });
   document.querySelectorAll('[data-size]').forEach(b => b.addEventListener('click', () => { draft.size = b.dataset.size; save(); }));
   document.querySelectorAll('[data-place]').forEach(b => b.addEventListener('click', () => { draft.place = b.dataset.place; if (draft.image && !draft.art) setImageURL(true); save(); }));
 
@@ -223,7 +291,7 @@
       if (!response.ok) throw Error('missing');
       const blob = await response.blob();
       if (version !== pictureVersion) return;
-      draft.image = new Blob([blob], {type:'image/jpeg'}); draft.imageName = picture.name; draft.pictureIndex = index; draft.art = picture.art; draft.ink = 'dark';
+      draft.image = new Blob([blob], {type:'image/jpeg'}); draft.imageName = picture.name; draft.pictureIndex = index; draft.art = picture.art; draft.ink = 'dark'; resetPicture();
       setImageURL(true); save();
       if (!quiet) say('card-status', `${picture.name} is on your card.`);
     } catch { if (!quiet) say('card-status', 'That picture could not load. Please try again.'); }
@@ -240,7 +308,7 @@
     try {
       const img = new Image(); img.src = url; await img.decode();
       pictureVersion++;
-      draft.image = file; draft.imageName = file.name; draft.pictureIndex = -1; draft.art = false;
+      draft.image = file; draft.imageName = file.name; draft.pictureIndex = -1; draft.art = false; resetPicture(); draft.picX = 50;
       setImageURL(true); save(); say('card-status', 'Your picture is on your card.');
     } catch { say('card-status', 'That picture could not be read. Please choose another.'); }
     finally { URL.revokeObjectURL(url); }
@@ -294,6 +362,7 @@
       recordTimer = setInterval(() => { seconds++; say('sound-status', `Recording… ${seconds} seconds. Tap Stop Recording when you are done.`); if (seconds >= 120) recorder.stop(); }, 1000);
     } catch { say('sound-status', 'Please allow the microphone to record your voice, then try again.'); }
   });
+  $('sound-volume').addEventListener('input', e => { draft.volume = Number(e.target.value); $('sound-player').volume = draft.volume / 100; save(); });
   $('remove-sound').addEventListener('click', () => { draft.sound = null; draft.soundName = ''; draft.soundKind = ''; setSound(); save(); say('sound-status', 'Sound removed.'); });
   const fileName = (suffix = '') => ((draft.title.trim() || 'mama-said-card').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase() || 'mama-said-card') + suffix;
   function downloadBlob(blob, name) {
@@ -546,7 +615,7 @@
   /* ---------- Start over, text size, start up ---------- */
   $('start-over').addEventListener('click', () => {
     if (!confirm('Start over? This clears your words, picture, and sound. Saved cards in My Cards stay.')) return;
-    draft = fresh(); populate(); usePicture(0, true); $('card-title').focus();
+    draft = fresh(); populate(); usePicture(0, true); showStep(1);
   });
   const sizeKey = 'mama-said-interface-text-size';
   const applySize = v => { const s = ['normal','large','extra-large'].includes(v) ? v : 'normal'; document.documentElement.dataset.textSize = s; $('interface-text-size').value = s; requestAnimationFrame(fitWords); };
@@ -604,16 +673,17 @@
       const draw = () => c2.drawImage(img, 0, 0, width, height);
       draw(); drawTimer = setInterval(draw, 100);
       const out = audio.createMediaStreamDestination();
-      const musicGain = audio.createGain(); musicGain.gain.value = 1;
+      const vol = draft.volume / 100;
+      const musicGain = audio.createGain(); musicGain.gain.value = vol;
       let m = null; if (music) { m = audio.createBufferSource(); m.buffer = music; m.connect(musicGain).connect(out); }
       const end = audio.currentTime + 0.3 + seconds;
-      musicGain.gain.setValueAtTime(1, end - 1.5); musicGain.gain.linearRampToValueAtTime(0, end);
+      musicGain.gain.setValueAtTime(vol, end - 1.5); musicGain.gain.linearRampToValueAtTime(0, end);
       let v = null;
       if (mama) {
-        musicGain.gain.setValueAtTime(0.35, audio.currentTime + 0.3);
-        musicGain.gain.setValueAtTime(0.35, audio.currentTime + 0.3 + mama.duration);
-        musicGain.gain.linearRampToValueAtTime(1, audio.currentTime + 0.3 + mama.duration + 1);
-        musicGain.gain.setValueAtTime(1, end - 1.5); musicGain.gain.linearRampToValueAtTime(0, end);
+        musicGain.gain.setValueAtTime(0.35 * vol, audio.currentTime + 0.3);
+        musicGain.gain.setValueAtTime(0.35 * vol, audio.currentTime + 0.3 + mama.duration);
+        musicGain.gain.linearRampToValueAtTime(vol, audio.currentTime + 0.3 + mama.duration + 1);
+        musicGain.gain.setValueAtTime(vol, end - 1.5); musicGain.gain.linearRampToValueAtTime(0, end);
         v = audio.createBufferSource(); v.buffer = mama; v.connect(out);
       }
       const stream = new MediaStream([...canvas.captureStream(10).getVideoTracks(), ...out.stream.getAudioTracks()]);
@@ -704,4 +774,32 @@
       catch { $('inapp-copy').textContent = 'www.mamasaidapp.com'; }
     });
   })();
+
+  /* ---------- Four easy steps: Picture, Words, Sound, Send. The card stays in view the whole time. ---------- */
+  const stepNames = ['Picture', 'Words', 'Sound', 'Send'];
+  let step = 1;
+  function showStep(n, scroll = true) {
+    step = Math.min(4, Math.max(1, n));
+    document.querySelectorAll('.step').forEach(el => { el.hidden = Number(el.dataset.step) !== step; });
+    document.querySelectorAll('[data-goto]').forEach(b => {
+      const k = Number(b.dataset.goto);
+      b.setAttribute('aria-current', k === step ? 'step' : 'false');
+      b.classList.toggle('done', k < step);
+    });
+    $('step-back').hidden = step === 1;
+    $('step-next').hidden = step === 4;
+    if (step < 4) $('step-next').textContent = `Next: ${stepNames[step]} ›`;
+    $('step-back').textContent = step > 1 ? `‹ Back: ${stepNames[step - 2]}` : '‹ Back';
+    try { sessionStorage.setItem('mama-said-step', String(step)); } catch {}
+    if (scroll) {
+      const phone = window.matchMedia('(max-width: 899px)').matches;
+      (phone ? $('card-stage') : document.querySelector('.design-panel')).scrollIntoView({block:'start', behavior:'smooth'});
+    }
+    requestAnimationFrame(fitWords);
+  }
+  document.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => showStep(Number(b.dataset.goto))));
+  $('step-next').addEventListener('click', () => showStep(step + 1));
+  $('step-back').addEventListener('click', () => showStep(step - 1));
+  $('step-hear-mama').addEventListener('click', () => $('hear-mama').click());
+  { let start = 1; try { start = Number(sessionStorage.getItem('mama-said-step')) || 1; } catch {} showStep(start, false); }
 })();
