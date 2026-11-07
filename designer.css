@@ -111,7 +111,7 @@ button:disabled{opacity:.55;cursor:default}
 .card-words{position:absolute;inset:8cqi 48% 9cqi 7cqi;display:flex;flex-direction:column;justify-content:flex-start;overflow:hidden}
 .card.full-style .card-words{right:7cqi;align-items:center;text-align:center}
 .card-top{margin:2cqi 0 0;font:500 5cqi/1.05 var(--serif);letter-spacing:.22em;text-transform:uppercase;color:#2b3b45;overflow-wrap:anywhere}
-.card-script{margin:0;font:400 9cqi/1.05 var(--script);color:var(--gold-ink);overflow-wrap:anywhere;padding-left:4cqi;text-shadow:0 1px 0 #ffffff80}
+.card-script{margin:0;font:400 calc(9cqi * var(--ss,1))/1.05 var(--script);color:var(--gold-ink);overflow-wrap:anywhere;padding-left:4cqi;text-shadow:0 1px 0 #ffffff80}
 .card-top:empty+.card-script{padding-left:0;margin-top:3cqi}
 .card-ornament{display:flex;align-items:center;gap:1.4cqi;margin:1.4cqi 0 1.6cqi 4cqi;color:var(--gold-soft);width:46%}
 .card.full-style .card-ornament{margin-left:auto;margin-right:auto}
@@ -230,7 +230,7 @@ body.zoomed .card-stage{width:min(94vw,calc((100vh - 170px) * 8 / 7));max-width:
 .card.has-picture:not(.art-card) .card-scrim{display:none}
 .card.has-picture:not(.art-card) .card-words{inset:auto auto 5cqi 6cqi;width:44%;max-height:60cqi;justify-content:flex-end}
 .card.has-picture:not(.art-card) .card-top{margin:0;font-size:3.6cqi}
-.card.has-picture:not(.art-card) .card-script{font-size:6.6cqi;padding-left:2.4cqi}
+.card.has-picture:not(.art-card) .card-script{font-size:calc(6.6cqi * var(--ss,1));padding-left:2.4cqi}
 .card.has-picture:not(.art-card) .card-ornament{margin:.8cqi 0 1cqi 2.4cqi;width:38%}
 .card.has-picture:not(.art-card) .card-message{font-size:3cqi;line-height:1.38}
 .card.has-picture.size-large:not(.art-card) .card-message{font-size:3.6cqi}
@@ -259,3 +259,98 @@ body.zoomed .card-stage{width:min(94vw,calc((100vh - 170px) * 8 / 7));max-width:
 .inapp-banner button{margin-left:8px;border:2px solid #fffcf5;background:transparent;color:#fffcf5;border-radius:999px;padding:4px 14px;font:700 15px var(--body);cursor:pointer}
 #phone-save-download{display:block;text-align:center;margin:8px 0;text-decoration:none;font-weight:700;color:var(--deep-ocean)}
 #phone-save-download[hidden]{display:none}
+
+/* ---------- Four easy steps (Nov 2026) ---------- */
+.steps-nav{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:4px 0 18px}
+.steps-nav button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;border:0;background:none;font:700 var(--fs-small) var(--body);color:var(--muted);border-bottom:3px solid var(--panel-line);min-height:var(--target)}
+.steps-nav b{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#fff;border:2px solid var(--panel-line);color:var(--deep-ocean);font-size:17px}
+.steps-nav button[aria-current=step]{color:var(--deep-ocean);border-bottom-color:var(--ocean)}
+.steps-nav button[aria-current=step] b{background:var(--ocean);border-color:var(--ocean);color:var(--pearl)}
+.steps-nav button.done b{background:var(--gold-light);border-color:var(--gold-soft)}
+.step-title{font-size:var(--fs-h2)!important;margin:0 0 12px!important}
+.design-panel h4{font:600 var(--fs-h3) var(--heading);color:var(--deep-ocean);margin:20px 0 10px}
+.step-buttons{display:flex;gap:12px;margin-top:24px;padding-top:16px;border-top:1px solid var(--panel-line)}
+.step-buttons .primary{margin-left:auto;font-size:calc(19px * var(--ui-scale));padding:14px 24px;border-radius:999px}
+.step-buttons .outline{border-radius:999px}
+.adjust-box{margin-top:18px;padding:14px 16px;border:1px solid var(--panel-line);border-radius:16px;background:#fffaf0}
+.adjust-box h4{margin-top:0!important}
+.slider-row{margin:10px 0}
+.slider-row label{margin:0 0 4px;font-size:var(--fs-body)}
+.slider-row input[type=range]{width:100%;height:36px;accent-color:var(--ocean)}
+.swatch-row{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+.swatch{width:44px;height:44px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #c9b28a,0 2px 6px #072f4326;padding:0}
+.swatch[aria-pressed=true]{box-shadow:0 0 0 3px var(--ocean),0 2px 6px #072f4333}
+.swatch-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;width:64px}
+.swatch-wrap small{font-size:13px;font-weight:600;color:var(--deep-ocean);text-align:center;line-height:1.2}
+.font-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+.font-choice{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px;border:1px solid #dcc49a;border-radius:12px;background:#fff;min-height:var(--target)}
+.font-choice span{font-size:28px;line-height:1.2;color:var(--deep-ocean)}
+.font-choice small{font-size:13px;font-weight:700;color:var(--muted)}
+.font-choice[aria-pressed=true]{border-color:var(--ocean);box-shadow:0 0 0 2px var(--ocean)}
+.mama-voice-box{margin-top:20px;padding:14px 16px;border:1px solid var(--panel-line);border-radius:16px;background:#fffaf0}
+.mama-voice-box h4{margin-top:0!important}
+.voice-off .mama-voice-box{display:none}
+/* Step 4 buttons now live in the panel, on light paper */
+.design-panel .send-card{margin:6px 0 4px;width:100%}
+.design-panel .send-hint{color:var(--muted);text-shadow:none;text-align:left}
+.design-panel .card-links{justify-content:flex-start}
+.design-panel .card-links .link-button,.design-panel .more-save{color:var(--deep-ocean);text-shadow:none}
+.design-panel .more-save{text-align:left}
+.design-panel .more-save-list{align-items:flex-start}
+/* Writing styles on the card */
+.card.font-classic .card-script{font-family:var(--serif);font-style:italic;font-weight:600;--ss:.72}
+.card.font-elegant .card-script{font-family:'Playfair Display',Georgia,serif;font-style:italic;font-weight:500;--ss:.62}
+.card.font-elegant .card-message,.card.font-elegant .card-top{font-family:'Playfair Display',Georgia,serif}
+.card.font-handwritten .card-script{font-family:'Dancing Script',cursive;font-weight:600;--ss:.78}
+.card.font-handwritten .card-message{font-family:'Dancing Script',cursive;font-weight:500}
+.card.font-modern .card-script{font-family:var(--body);font-weight:700;--ss:.6}
+.card.font-modern .card-message,.card.font-modern .card-top{font-family:var(--body)}
+/* Small words */
+.card.size-small .card-message{font-size:2.9cqi}
+.card.has-picture.size-small:not(.art-card) .card-message{font-size:2.5cqi}
+/* Word colors chosen by the customer */
+.card.wc .card-words,.card.wc .card-top,.card.wc .card-script,.card.wc .card-message,.card.wc .card-ornament{color:var(--wc)!important}
+.card.wc-light .card-words,.card.wc-light .card-script{text-shadow:0 .2cqi .5cqi #000000d9,0 0 1.4cqi #000000a6!important}
+.card.wc-dark .card-words,.card.wc-dark .card-script{text-shadow:0 0 1.2cqi #fffaf2,0 0 .4cqi #fffaf2!important}
+@media (max-width:899px){.steps-nav b{width:30px;height:30px}.step-buttons .primary{flex:1}}
+
+/* Drag the words anywhere on the card */
+.card-words{cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none}
+.card-words.dragging{cursor:grabbing;outline:2px dashed #fffcf5cc;outline-offset:4px;border-radius:8px}
+.words-tip{margin:12px 0 6px;font-size:var(--fs-small);color:var(--muted)}
+.words-reset{width:100%;margin-top:4px}
+
+/* Smaller top bar, more room for the card */
+.designer-header{padding:4px 24px;gap:6px 18px}
+.brand{font-size:30px;line-height:1}
+.brand span{display:none}
+.designer-header nav{gap:2px 14px}
+.designer-header nav a,.nav-link{font-size:calc(15px * var(--ui-scale));padding:4px 0;min-height:36px}
+.site-search{flex:0 1 200px}
+.site-search input[type=search]{min-height:36px;padding:4px 12px 4px 38px}
+.text-size select{min-height:34px;padding:2px 6px}
+.designer-header .mama-talk-button{font-size:15px!important;padding:3px 14px 3px 3px!important;min-height:36px!important}
+.designer-header .mama-talk-button img{width:30px!important;height:30px!important}
+.studio{padding-top:14px}
+@media (max-width:899px){
+  .designer-header{padding:6px 14px;gap:4px 14px}
+  .brand{font-size:28px}
+  .designer-header nav{gap:0 16px;flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;scrollbar-width:none}
+  .designer-header nav::-webkit-scrollbar{display:none}
+  .site-search{flex:1 1 100%;min-width:0}
+}
+
+/* Sign your card */
+.sign-box{border:1px solid var(--panel-line);border-radius:14px;padding:12px 14px 14px;margin:14px 0 6px}
+.sign-box legend{font:600 var(--fs-body,18px) var(--heading);color:var(--deep-ocean);padding:0 6px}
+.sign-box input{width:100%;min-height:var(--target);border:1px solid var(--panel-line);border-radius:12px;padding:8px 12px;font:inherit;background:#fff;margin-bottom:8px}
+.sign-box .hint{font-weight:400;color:var(--muted);font-size:var(--fs-small)}
+.closing-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.closing-pick{border:1px solid var(--panel-line);background:#fff;border-radius:999px;padding:8px 14px;font:600 var(--fs-small) var(--body);color:var(--deep-ocean);cursor:pointer;min-height:40px}
+.closing-pick[aria-pressed=true]{background:var(--deep-ocean);color:#fffcf5;border-color:var(--deep-ocean)}
+.card-from{margin:1.6cqi 0 0;font:400 4.4cqi/1.2 var(--script);font-size:calc(4.4cqi * var(--ss,1))}
+.card.wc .card-from{color:var(--wc)!important}
+
+/* Mama Said mark: tiny and soft, so the card is clearly from the sender */
+.card .card-signature,.card.has-picture:not(.art-card) .card-signature{top:auto;left:auto;right:2.4cqi;bottom:1.8cqi;font-size:2.4cqi;opacity:.4;color:#fffcf5;text-shadow:none}
+.card:not(.has-picture):not(.ink-light) .card-signature{color:var(--gold-ink)}

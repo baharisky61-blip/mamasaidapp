@@ -5,10 +5,10 @@
 <title>Design Your Card | Mama Said</title>
 <meta name="description" content="Design a Mama Said card that speaks from the heart.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="studio-palette.css"><link rel="stylesheet" href="designer.css?v=oct26b">
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Dancing+Script:wght@500;600&family=Playfair+Display:ital,wght@0,500;1,500&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="studio-palette.css"><link rel="stylesheet" href="designer.css?v=steps3">
 <script src="voice-config.js?v=3"></script>
-<script src="designer.js?v=oct26d" defer></script>
+<script src="designer.js?v=steps3" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#card-title">Skip to card design</a>
@@ -40,77 +40,155 @@
   <h1 class="visually-hidden">Mama Said card designer</h1>
   <noscript><p class="noscript">This card designer needs JavaScript. Please turn it on and refresh.</p></noscript>
 
-  <!-- Left: everything you choose -->
+  <!-- Left: four easy steps -->
   <section class="panel design-panel" aria-labelledby="design-title">
     <div class="panel-heading">
       <span class="lotus-mark" aria-hidden="true"></span>
-      <div><h2 id="design-title">Design Your Card</h2><p>Create a card that speaks from the heart.</p></div>
+      <div><h2 id="design-title">Make Your Card</h2><p>Four easy steps. Your card changes as you go.</p></div>
     </div>
 
-    <label for="card-title">Card Title</label>
-    <input id="card-title" type="text" maxlength="80" placeholder="A note for you" autocomplete="off">
-    <span class="counter" id="title-count" aria-hidden="true">0/80</span>
+    <nav class="steps-nav" aria-label="Card steps">
+      <button type="button" data-goto="1"><b>1</b>Picture</button>
+      <button type="button" data-goto="2"><b>2</b>Words</button>
+      <button type="button" data-goto="3"><b>3</b>Sound</button>
+      <button type="button" data-goto="4"><b>4</b>Send</button>
+    </nav>
 
-    <label for="card-message">Your Message</label>
-    <textarea id="card-message" maxlength="500" rows="5" placeholder="Write what's on your heart…&#10;Mama Said will help you find the right words if you need inspiration."></textarea>
-    <span class="counter" id="message-count" aria-hidden="true">0/500</span>
-    <button type="button" class="speak-btn" id="speak-message" hidden>🎤 Speak My Message</button>
-    <p id="speak-status" class="status" role="status" aria-live="polite"></p>
+    <!-- Step 1: Picture -->
+    <div class="step" data-step="1" role="group" aria-labelledby="step1-title">
+      <h3 id="step1-title" class="step-title">Step 1: Pick your picture</h3>
+      <div class="picture-grid" id="picture-grid"></div>
+      <button type="button" class="outline wide" data-open="pictures">See all pictures</button>
 
-    <div class="button-row">
-      <button type="button" class="primary quote" data-open="sayings">Mama's Sayings</button>
-      <button type="button" class="outline bulb" id="get-inspiration">Get Inspiration</button>
+      <h4>Or use your own photo</h4>
+      <div class="file-row">
+        <span class="file-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 17-5-5-9 8"/></svg></span>
+        <label class="file-button" for="card-image">Choose My Photo</label>
+        <input id="card-image" class="visually-hidden" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
+        <span id="image-name" class="file-name">No file chosen</span>
+      </div>
+
+      <div id="picture-controls" class="adjust-box">
+        <h4>Move and size your picture</h4>
+        <div class="segmented" role="group" aria-label="How the picture fits">
+          <button type="button" data-fit="fill" aria-pressed="true">Fill the card</button>
+          <button type="button" data-fit="fit" aria-pressed="false">Smaller, with color</button>
+        </div>
+        <div class="slider-row"><label for="pic-zoom">Bigger or smaller</label><input type="range" id="pic-zoom" min="50" max="250" step="5" value="100"></div>
+        <div class="slider-row"><label for="pic-x">Move left or right</label><input type="range" id="pic-x" min="0" max="100" step="1" value="50"></div>
+        <div class="slider-row"><label for="pic-y">Move up or down</label><input type="range" id="pic-y" min="0" max="100" step="1" value="50"></div>
+        <div id="pic-bg-row" class="swatch-row" role="group" aria-label="Color behind the picture"></div>
+        <button type="button" class="outline" id="pic-center">Center the picture</button>
+      </div>
+
+      <h4>Or a plain background</h4>
+      <div class="style-tiles" role="radiogroup" aria-label="Background and style" id="style-tiles"></div>
+
+      <label class="check"><input type="checkbox" id="show-mama"> Put Mama's picture on my card</label>
     </div>
 
-    <h3>Background &amp; Style</h3>
-    <div class="style-tiles" role="radiogroup" aria-label="Background and style" id="style-tiles"></div>
+    <!-- Step 2: Words -->
+    <div class="step" data-step="2" role="group" aria-labelledby="step2-title" hidden>
+      <h3 id="step2-title" class="step-title">Step 2: Write your words</h3>
+      <label for="card-title">Card Title</label>
+      <input id="card-title" type="text" maxlength="80" placeholder="A note for you" autocomplete="off">
+      <span class="counter" id="title-count" aria-hidden="true">0/80</span>
 
-    <h3>Card Pictures</h3>
-    <div class="picture-grid" id="picture-grid"></div>
-    <button type="button" class="outline wide" data-open="pictures">See all pictures</button>
+      <label for="card-message">Your Message</label>
+      <textarea id="card-message" maxlength="500" rows="5" placeholder="Write what's on your heart…&#10;Mama Said will help you find the right words if you need inspiration."></textarea>
+      <span class="counter" id="message-count" aria-hidden="true">0/500</span>
+      <fieldset class="sign-box">
+        <legend>Sign your card</legend>
+        <div class="closing-row" role="group" aria-label="Pick a closing">
+          <button type="button" class="closing-pick" data-closing="Love,">Love,</button>
+          <button type="button" class="closing-pick" data-closing="From,">From,</button>
+          <button type="button" class="closing-pick" data-closing="With love,">With love,</button>
+          <button type="button" class="closing-pick" data-closing="Your friend,">Your friend,</button>
+        </div>
+        <label for="card-closing">Closing words <span class="hint">(type your own if you like)</span></label>
+        <input id="card-closing" type="text" maxlength="40" autocomplete="off" placeholder="Love,">
+        <label for="card-name">Your name</label>
+        <input id="card-name" type="text" maxlength="40" autocomplete="name" placeholder="Your name">
+      </fieldset>
+      <button type="button" class="speak-btn" id="speak-message" hidden>🎤 Speak My Message</button>
+      <p id="speak-status" class="status" role="status" aria-live="polite"></p>
 
-    <h3>Words</h3>
-    <div class="segmented" role="group" aria-label="Words color">
-      <button type="button" data-ink="dark" aria-pressed="true">Dark words</button>
-      <button type="button" data-ink="light" aria-pressed="false">Light words</button>
-    </div>
-    <div class="segmented" role="group" aria-label="Words size">
-      <button type="button" data-size="normal" aria-pressed="true">Normal size</button>
-      <button type="button" data-size="large" aria-pressed="false">Large size</button>
-    </div>
-    <div class="segmented" role="group" aria-label="Where the words go on a photo">
-      <button type="button" data-place="bottom" aria-pressed="true">Words bottom</button>
-      <button type="button" data-place="left" aria-pressed="false">Words left</button>
-      <button type="button" data-place="right" aria-pressed="false">Words right</button>
-    </div>
-    <label class="check"><input type="checkbox" id="show-mama"> Put Mama's picture on my card</label>
+      <div class="button-row">
+        <button type="button" class="primary quote" data-open="sayings">Mama's Sayings</button>
+        <button type="button" class="outline bulb" id="get-inspiration">Get Inspiration</button>
+      </div>
 
-    <h3>Add a Personal Image <span class="optional">(Optional)</span></h3>
-    <div class="file-row">
-      <span class="file-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 17-5-5-9 8"/></svg></span>
-      <label class="file-button" for="card-image">Choose File</label>
-      <input id="card-image" class="visually-hidden" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
-      <span id="image-name" class="file-name">No file chosen</span>
+      <h4>Writing style</h4>
+      <div class="font-row" id="font-row" role="group" aria-label="Writing style"></div>
+
+      <h4>Word color</h4>
+      <div class="swatch-row" id="color-row" role="group" aria-label="Word color"></div>
+
+      <h4>Word size</h4>
+      <div class="segmented" role="group" aria-label="Words size">
+        <button type="button" data-size="small" aria-pressed="false">Small</button>
+        <button type="button" data-size="normal" aria-pressed="true">Medium</button>
+        <button type="button" data-size="large" aria-pressed="false">Large</button>
+      </div>
+
+      <h4>Where the words go</h4>
+      <div class="segmented" role="group" aria-label="Where the words go on a photo">
+        <button type="button" data-place="left" aria-pressed="false">Left</button>
+        <button type="button" data-place="bottom" aria-pressed="true">Bottom</button>
+        <button type="button" data-place="right" aria-pressed="false">Right</button>
+      </div>
+      <p class="words-tip"><strong>Tip:</strong> press on the words on the card and drag them anywhere you like.</p>
+      <button type="button" class="outline words-reset" id="words-reset" hidden>Put words back</button>
     </div>
 
-    <h3>Add Sound <span class="optional">(Optional)</span></h3>
-    <p class="hint">Add your own music, or say the card in your own voice.</p>
-    <div class="file-row">
-      <span class="file-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span>
-      <label class="file-button" for="card-sound">Upload Music</label>
-      <input id="card-sound" class="visually-hidden" type="file" accept="audio/*,.mp3,.m4a,.aac,.wav,.ogg,.flac,.aif,.aiff,.caf">
-      <button type="button" class="file-button record" id="record-voice">● Record My Voice</button>
+    <!-- Step 3: Sound -->
+    <div class="step" data-step="3" role="group" aria-labelledby="step3-title" hidden>
+      <h3 id="step3-title" class="step-title">Step 3: Add music or Mama's voice <span class="optional">(optional)</span></h3>
+      <p class="hint">You can skip this step. Your card is lovely without sound too.</p>
+      <div class="file-row">
+        <span class="file-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span>
+        <label class="file-button" for="card-sound">Upload Music</label>
+        <input id="card-sound" class="visually-hidden" type="file" accept="audio/*,.mp3,.m4a,.aac,.wav,.ogg,.flac,.aif,.aiff,.caf">
+        <button type="button" class="file-button record" id="record-voice">● Record My Voice</button>
+      </div>
+      <div id="sound-box" class="sound-box" hidden>
+        <p id="sound-name"></p>
+        <audio id="sound-player" controls preload="metadata"></audio>
+        <div class="slider-row"><label for="sound-volume">Music softer or louder</label><input type="range" id="sound-volume" min="10" max="100" step="5" value="100"></div>
+        <div class="button-row"><button type="button" class="outline" id="save-sound">Save My Sound</button><button type="button" class="outline" id="remove-sound">Remove Sound</button></div>
+      </div>
+      <p id="sound-status" class="status" role="status" aria-live="polite"></p>
+      <div class="voice-only mama-voice-box">
+        <h4>Let Mama read your card</h4>
+        <p class="hint">Mama reads your words out loud. Her voice goes into your card when you send it.</p>
+        <button type="button" class="primary" id="step-hear-mama">🔊 Hear Mama Read It</button>
+      </div>
     </div>
-    <div id="sound-box" class="sound-box" hidden>
-      <p id="sound-name"></p>
-      <audio id="sound-player" controls preload="metadata"></audio>
-      <div class="button-row"><button type="button" class="outline" id="save-sound">Save My Sound</button><button type="button" class="outline" id="remove-sound">Remove Sound</button></div>
-    </div>
-    <p id="sound-status" class="status" role="status" aria-live="polite"></p>
 
-    <div class="panel-footer">
-      <button type="button" class="outline restart" id="start-over">Start Over</button>
-      <p class="lock-note"><span aria-hidden="true">🔒</span> Your draft stays in this browser until you clear your data.</p>
+    <!-- Step 4: Send -->
+    <div class="step" data-step="4" role="group" aria-labelledby="step4-title" hidden>
+      <h3 id="step4-title" class="step-title">Step 4: Save and send</h3>
+      <button type="button" class="primary send-card" id="send-card">📤 Send My Card</button>
+      <p class="send-hint" id="send-hint">Sends your card as a picture.</p>
+      <div class="card-links">
+        <button type="button" class="link-button" id="save-to-my-cards">Save to My Cards</button>
+        <details class="more-save">
+          <summary>More options</summary>
+          <div class="more-save-list">
+            <button type="button" class="link-button" id="download-card">Download the picture only</button>
+            <button type="button" class="link-button voice-only" id="save-mama-voice">Save Mama's voice only</button>
+          </div>
+        </details>
+      </div>
+      <div class="panel-footer">
+        <button type="button" class="outline restart" id="start-over">Start a New Card</button>
+        <p class="lock-note"><span aria-hidden="true">🔒</span> Your card stays in this browser until you clear your data.</p>
+      </div>
+    </div>
+
+    <div class="step-buttons">
+      <button type="button" class="outline" id="step-back">‹ Back</button>
+      <button type="button" class="primary" id="step-next">Next ›</button>
     </div>
     <p id="save-status" class="visually-hidden" role="status" aria-live="polite"></p>
   </section>
@@ -125,6 +203,7 @@
           <h2 class="card-script" id="card-script"></h2>
           <div class="card-ornament" aria-hidden="true"><span></span><i>♥</i><span></span></div>
           <p class="card-message" id="card-message-text"></p>
+          <p class="card-from" id="card-from" hidden></p>
         </div>
         <img id="card-mama" class="card-mama" src="mama.jpg" alt="" hidden>
         <span class="card-signature">Mama Said</span>
@@ -137,18 +216,6 @@
       <button type="button" class="tool" id="fit-card"><span class="round"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg></span>Fit</button>
       <button type="button" class="tool voice-only" id="hear-mama"><span class="round"><svg viewBox="0 0 24 24"><path d="M4 10v4h4l5 4V6L8 10z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg></span><span id="hear-mama-label">Hear Mama</span></button>
       <button type="button" class="round arrow" id="next-picture" aria-label="Next picture"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/><path d="M16 12H4"/></svg></button>
-    </div>
-    <button type="button" class="primary send-card" id="send-card">📤 Send My Card</button>
-    <p class="send-hint" id="send-hint">Sends your card as a picture.</p>
-    <div class="card-links">
-      <button type="button" class="link-button" id="save-to-my-cards">Save to My Cards</button>
-      <details class="more-save">
-        <summary>More options</summary>
-        <div class="more-save-list">
-          <button type="button" class="link-button" id="download-card">Download the picture only</button>
-          <button type="button" class="link-button voice-only" id="save-mama-voice">Save Mama's voice only</button>
-        </div>
-      </details>
     </div>
     <p id="card-status" class="status center" role="status" aria-live="polite"></p>
   </section>
