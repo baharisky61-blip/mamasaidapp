@@ -862,7 +862,6 @@
   $('step-back').addEventListener('click', () => showStep(step - 1));
   $('step-hear-mama').addEventListener('click', () => $('hear-mama').click());
   { let start = 1; try { start = Number(sessionStorage.getItem('mama-said-step')) || 1; } catch {} showStep(start, false); }
-}
   /* ---------- Experimental ElevenLabs client-tool bridge (test branch only) ----------
    * Guide mode: read-only help. Do-it-for-me mode: every card edit needs
    * an explicit confirmation in the customer's browser.
