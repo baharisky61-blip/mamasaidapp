@@ -134,6 +134,19 @@
       conversation = await client.Conversation.startSession({
         agentId: AGENT_ID,
         connectionType: 'websocket',
+        // These tools run only in the card designer; other pages return a safe message.
+        // Names must match Client tools configured in the ElevenLabs agent.
+        clientTools: Object.fromEntries([
+          'get_card_options', 'guide_card_step', 'select_card_style',
+          'select_card_picture', 'write_card_message'
+        ].map(function (name) {
+          return [name, function (params) {
+            var actions = window.MamaSaidCardTools;
+            if (!actions || typeof actions[name] !== 'function')
+              return {ok:false,message:'Open the card designer first to use this action.'};
+            return actions[name](params || {});
+          }];
+        })),
         onConnect: function () { setState('listening', WORDS.listening); },
         onDisconnect: function () { if (conversation) { conversation = null; setState('idle', WORDS.goodbye); } },
         onError: function () { conversation = null; setState('idle', WORDS.error); },
