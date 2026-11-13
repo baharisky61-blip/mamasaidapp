@@ -1,12 +1,13 @@
 // Mama's voice switch. Set MAMA_VOICE_ON to true when ElevenLabs credits are available.
 window.MAMA_VOICE_ON = true;
-window.MAMA_AGENT_ID = 'agent_5601m50qpec0exstzb42a0cqp2yp';
+// "Mama Said APP copy" — the agent that has the five card tools.
+window.MAMA_AGENT_ID = 'agent_1201m74jecrnfxcre6anfb5abbye';
 (function () {
   if (window.MAMA_VOICE_ON) {
     document.documentElement.classList.add('voice-on');
     // Tap Mama's face to talk (mama-talk.js). The old ElevenLabs corner box is no longer used.
     var script = document.createElement('script');
-    script.src = 'mama-talk.js?v=3';
+    script.src = 'mama-talk.js?v=4';
     script.defer = true;
     document.head.appendChild(script);
   } else {

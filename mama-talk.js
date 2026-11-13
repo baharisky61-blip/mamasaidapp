@@ -108,6 +108,26 @@
     agree.focus();
   }
 
+  // Mama's five card tools (set up on the ElevenLabs agent as "client" tools).
+  // Each one hands the work to the card designer (window.MamaCard in designer.js) and tells Mama what happened.
+  var NOT_OPEN = 'The card maker is not open on this page. Tell the customer to tap "Create" at the top so you can make the card together.';
+  function withCard(work) {
+    return async function (params) {
+      if (!window.MamaCard) return NOT_OPEN;
+      try {
+        var answer = await work(window.MamaCard, params || {});
+        return typeof answer === 'string' ? answer : (answer.result || JSON.stringify(answer));
+      } catch (e) { return 'Something went wrong changing the card. Ask the customer to try that part by hand.'; }
+    };
+  }
+  var cardTools = {
+    get_card_options: withCard(function (card) { return JSON.stringify(card.options()); }),
+    select_card_style: withCard(function (card, p) { return card.setStyle(p.style); }),
+    select_card_picture: withCard(function (card, p) { return card.setPicture(p.picture); }),
+    write_card_message: withCard(function (card, p) { return card.setMessage(p.message, p.title); }),
+    guide_card_step: withCard(function (card, p) { return card.goToStep(p.step); })
+  };
+
   function onTap() {
     if (conversation || starting || hasConsent()) { toggle(); return; }
     askConsent(function (ok) {
@@ -134,6 +154,7 @@
       conversation = await client.Conversation.startSession({
         agentId: AGENT_ID,
         connectionType: 'websocket',
+        clientTools: cardTools,
         onConnect: function () { setState('listening', WORDS.listening); },
         onDisconnect: function () { if (conversation) { conversation = null; setState('idle', WORDS.goodbye); } },
         onError: function () { conversation = null; setState('idle', WORDS.error); },

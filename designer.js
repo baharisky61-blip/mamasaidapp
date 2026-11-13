@@ -862,4 +862,61 @@
   $('step-back').addEventListener('click', () => showStep(step - 1));
   $('step-hear-mama').addEventListener('click', () => $('hear-mama').click());
   { let start = 1; try { start = Number(sessionStorage.getItem('mama-said-step')) || 1; } catch {} showStep(start, false); }
+
+  /* ---------- Mama's hands: lets Mama (the voice agent) change the card while she talks ---------- */
+  // mama-talk.js calls these when the ElevenLabs agent uses one of its five card tools.
+  const plain = s => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  const findBy = (list, wanted, ...keys) => {
+    const w = plain(wanted);
+    if (!w) return null;
+    return list.find(x => keys.some(k => plain(x[k]) === w))
+      || list.find(x => keys.some(k => plain(x[k]).includes(w) || w.includes(plain(x[k]))));
+  };
+  window.MamaCard = {
+    options() {
+      return {
+        backgrounds: styles.map(s => s.name),
+        pictures: cardPictures.map(p => p.name),
+        steps: stepNames,
+        currentStep: stepNames[step - 1],
+        card: {title: draft.title, message: draft.message, background: draft.image ? '' : (styles.find(s => s.id === draft.style) || {}).name, picture: draft.image ? draft.imageName : ''}
+      };
+    },
+    setStyle(wanted) {
+      const style = findBy(styles, wanted, 'name', 'id');
+      if (!style) return {ok: false, result: `No background called "${wanted}". Choices: ${styles.map(s => s.name).join(', ')}.`};
+      showStep(1);
+      draft.style = style.id; draft.image = null; draft.imageName = ''; draft.pictureIndex = -1; draft.art = false; draft.ink = style.ink;
+      setImageURL(); save(); say('card-status', `${style.name} is on your card.`);
+      return {ok: true, result: `The ${style.name} background is now on the card.`};
+    },
+    async setPicture(wanted) {
+      const picture = findBy(cardPictures, wanted, 'name', 'file');
+      if (!picture) return {ok: false, result: `No picture called "${wanted}". Use get_card_options for the list of picture names.`};
+      showStep(1);
+      await usePicture(cardPictures.indexOf(picture));
+      return {ok: draft.imageName === picture.name, result: draft.imageName === picture.name ? `The ${picture.name} picture is now on the card.` : 'That picture could not load. Ask the customer to try another.'};
+    },
+    setMessage(message, title) {
+      const words = String(message || '').trim().slice(0, 500);
+      if (!words) return {ok: false, result: 'The message was empty. Ask the customer what they want the card to say.'};
+      showStep(2);
+      draft.message = words; $('card-message').value = words;
+      if (title && String(title).trim()) { draft.title = String(title).trim().slice(0, 80); $('card-title').value = draft.title; }
+      save(); say('card-status', 'Mama wrote your message on the card.');
+      return {ok: true, result: `The card now says: "${words}"`};
+    },
+    goToStep(name) {
+      const n = stepNames.findIndex(s => plain(s) === plain(name)) + 1;
+      if (!n) return {ok: false, result: `No step called "${name}". Steps: ${stepNames.join(', ')}.`};
+      showStep(n);
+      const help = {
+        Picture: 'Here they can pick a background color, choose one of Mama\'s pictures, or upload their own photo.',
+        Words: 'Here they can type a title and message, or tap one of Mama\'s Sayings.',
+        Sound: 'Here they can add their own music or record their own voice, or have Mama read the card.',
+        Send: 'Here they tap Send My Card to save it to their phone or text it to someone.'
+      };
+      return {ok: true, result: `The ${stepNames[n - 1]} step is open. ${help[stepNames[n - 1]]}`};
+    }
+  };
 })();
