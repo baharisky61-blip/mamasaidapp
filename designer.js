@@ -863,8 +863,8 @@
   $('step-hear-mama').addEventListener('click', () => $('hear-mama').click());
   { let start = 1; try { start = Number(sessionStorage.getItem('mama-said-step')) || 1; } catch {} showStep(start, false); }
   /* ---------- Experimental ElevenLabs client-tool bridge (test branch only) ----------
-   * Guide mode: read-only help. Do-it-for-me mode: every card edit needs
-   * an explicit confirmation in the customer's browser.
+   * Guide mode: read-only help. Do-it-for-me mode: edit only after the visitor's spoken approval;
+   * avoid blocking confirmation popups. The visitor reviews before sending.
    * No access to local files, no uploads, no sending, and no music selection.
    */
   window.MamaSaidCardTools = {
@@ -894,7 +894,6 @@
       const found = styles.find(x => x.id === String(requested || '').toLowerCase() ||
         x.name.toLowerCase() === String(requested || '').toLowerCase());
       if (!found) return {ok:false,message:'That exact style is unavailable. Offer an available style instead.',available:styles.map(x => x.name)};
-      if (!window.confirm('Mama Said would change the background to "' + found.name + '". Is that okay?')) return {ok:false,message:'Customer declined the background change.'};
       draft.style = found.id; draft.image = null; draft.imageName = ''; draft.pictureIndex = -1;
       draft.art = false; draft.ink = found.ink; setImageURL(); save();
       return {ok:true,message:'Background changed to ' + found.name + '.'};
@@ -902,15 +901,12 @@
     select_card_picture: async function ({picture: requested} = {}) {
       const index = cardPictures.findIndex(p => p.name.toLowerCase() === String(requested || '').trim().toLowerCase());
       if (index < 0) return {ok:false,message:'That exact picture is unavailable. Offer a picture from the catalog.',available:cardPictures.map(p => p.name)};
-      if (!window.confirm('Mama Said would put "' + cardPictures[index].name + '" on your card. Is that okay?')) return {ok:false,message:'Customer declined the picture change.'};
       await usePicture(index);
       return {ok:draft.pictureIndex === index,message:draft.pictureIndex === index ? 'Picture selected.' : 'Picture could not be loaded.'};
     },
     write_card_message: function ({message} = {}) {
       if (typeof message !== 'string' || !message.trim() || message.length > 500)
         return {ok:false,message:'Please provide a message between 1 and 500 characters.'};
-      if (!window.confirm('Mama Said would replace the card message with:\\n\\n' + message + '\\n\\nApprove?'))
-        return {ok:false,message:'Customer declined the message change.'};
       draft.message = message; $('card-message').value = message; save();
       return {ok:true,message:'Message placed on the card for review.'};
     }
