@@ -1,6 +1,6 @@
 // Mama's voice switch. Set MAMA_VOICE_ON to true when ElevenLabs credits are available.
 window.MAMA_VOICE_ON = true;
-window.MAMA_AGENT_ID = 'agent_5601m50qpec0exstzb42a0cqp2yp';
+window.MAMA_AGENT_ID = 'agent_1201m74jecrnfxcre6anfb5abbye';
 (function () {
   if (window.MAMA_VOICE_ON) {
     document.documentElement.classList.add('voice-on');

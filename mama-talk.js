@@ -2,6 +2,8 @@
 // Replaces the ElevenLabs corner box. A consent notice must be accepted first; the talking library only loads after that.
 (function () {
   'use strict';
+  // The homepage owns the active voice call while the card maker is embedded.
+  if (window.parent !== window && new URLSearchParams(window.location.search).get('mamaEmbedded') === '1') return;
   var AGENT_ID = window.MAMA_AGENT_ID;
   var LIBRARY = 'https://cdn.jsdelivr.net/npm/@elevenlabs/client@1.27.0/dist/lib.iife.js';
   var WORDS = {
@@ -134,6 +136,26 @@
       conversation = await client.Conversation.startSession({
         agentId: AGENT_ID,
         connectionType: 'websocket',
+        // These tools run only in the card designer; other pages return a safe message.
+        // Names must match Client tools configured in the ElevenLabs agent.
+        clientTools: Object.fromEntries([
+          'get_card_options', 'guide_card_step', 'select_card_style',
+          'select_card_picture', 'write_card_message'
+        ].map(function (name) {
+          return [name, async function (params) {
+            var actions = window.MamaSaidCardTools;
+            // From the homepage, open the integrated designer without reloading
+            // the page or ending this ElevenLabs voice conversation.
+            if (!actions && typeof window.MamaSaidOpenDesigner === 'function') {
+              try { actions = await window.MamaSaidOpenDesigner(); }
+              catch (e) { return {ok:false,message:'The card maker could not open. Please try again.'}; }
+            }
+            if (!actions || typeof actions[name] !== 'function')
+              return {ok:false,message:'The card maker is not available on this page.'};
+            try { return await actions[name](params || {}); }
+            catch (e) { return {ok:false,message:'That card action could not be completed. Please try again.'}; }
+          }];
+        })),
         onConnect: function () { setState('listening', WORDS.listening); },
         onDisconnect: function () { if (conversation) { conversation = null; setState('idle', WORDS.goodbye); } },
         onError: function () { conversation = null; setState('idle', WORDS.error); },
