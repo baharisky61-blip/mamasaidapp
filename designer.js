@@ -198,10 +198,15 @@
   }
   // Long messages get a little smaller so every word stays on the card.
   function fitWords() {
-    const words = card.querySelector('.card-words'), message = $('card-message-text');
-    message.style.fontSize = '';
+    const words = card.querySelector('.card-words'), message = $('card-message-text'), title = $('card-script');
+    message.style.fontSize = ''; title.style.fontSize = '';
+    const tooBig = () => words.scrollHeight > words.clientHeight + 1 || title.scrollWidth > title.clientWidth + 1;
+    // A long title shrinks first (so it is never cut off), then the message.
+    let t = parseFloat(getComputedStyle(title).fontSize), tFloor = card.clientWidth * 0.045;
+    const titleLong = () => title.scrollWidth > title.clientWidth + 1 || title.getClientRects().length && title.offsetHeight > t * 2.3;
+    while ((titleLong() || tooBig()) && t > tFloor) { t -= 0.5; title.style.fontSize = `${t}px`; }
     let size = parseFloat(getComputedStyle(message).fontSize), floor = card.clientWidth * 0.022;
-    while (words.scrollHeight > words.clientHeight + 1 && size > floor) { size -= 0.5; message.style.fontSize = `${size}px`; }
+    while (tooBig() && size > floor) { size -= 0.5; message.style.fontSize = `${size}px`; }
   }
   let imageWide = false, imgRatio = 0;
   // When a new photo goes on the card, pick light or dark words to match the picture where the words sit.
