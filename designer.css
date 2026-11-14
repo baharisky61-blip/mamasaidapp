@@ -258,6 +258,7 @@ body.zoomed .card-stage{width:min(94vw,calc((100vh - 170px) * 8 / 7));max-width:
 .inapp-banner{background:#93601F;color:#fffcf5;padding:12px 16px;font-size:17px;line-height:1.45;text-align:center}
 .inapp-banner button{margin-left:8px;border:2px solid #fffcf5;background:transparent;color:#fffcf5;border-radius:999px;padding:4px 14px;font:700 15px var(--body);cursor:pointer}
 #phone-save-download{display:block;text-align:center;margin:8px 0;text-decoration:none;font-weight:700;color:var(--deep-ocean)}
+#phone-save-download.primary{color:var(--pearl);display:flex;margin:4px 0 12px}
 #phone-save-download[hidden]{display:none}
 
 /* ---------- Four easy steps (Nov 2026) ---------- */

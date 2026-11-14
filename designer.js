@@ -616,10 +616,17 @@
     $('phone-save-title').textContent = video ? 'Your video card is ready' : 'Save your card';
     $('phone-share').textContent = video ? 'Save or Send My Video' : 'Save or Send My Card';
     $('phone-share').hidden = !canShare;
-    const dl = $('phone-save-download'); dl.href = phoneURL; dl.download = main.name; dl.hidden = !video;
+    // On a computer, the card is downloaded by a button the customer clicks herself.
+    // (Browsers block a download that starts on its own after a wait, like making Mama's video.)
+    const computer = !isPhone();
+    const dl = $('phone-save-download'); dl.href = phoneURL; dl.download = main.name; dl.hidden = !(video || computer);
+    dl.textContent = computer ? (video ? 'Download My Video Card' : 'Download My Card') : 'Download it instead';
+    dl.classList.toggle('primary', computer); dl.classList.toggle('outline', !computer);
+    computerExtras = computer ? more : [];
     const apple = /iPhone|iPad|iPod|Macintosh/i.test(navigator.userAgent);
     const hold = video ? 'press play to watch it.' : (apple ? 'press and hold the picture, then tap "Save to Photos."' : 'press and hold the picture, then tap "Download image."');
     $('phone-save-help').textContent = canShare ? `Tap the button to save or send it${phoneFiles.length > 1 ? ' with your sound' : ''}. Or ${hold}` : hold[0].toUpperCase() + hold.slice(1);
+    if (computer) { $('phone-share').hidden = true; $('phone-save-help').textContent = `Click "${dl.textContent}." It will go to your Downloads folder.${more.length ? ' Your sound comes with it.' : ''}`; }
     if (videoFailed) $('phone-save-help').textContent = (phoneFiles.length > 1 ? "This phone couldn't make a video, so your card is ready as a picture, with the sound included. " : "This phone couldn't make a video, so your card is ready as a picture. ") + $('phone-save-help').textContent;
     phoneSave.showModal();
   }
@@ -627,14 +634,17 @@
     try { await navigator.share({files: phoneFiles, title: 'My Mama Said card'}); }
     catch (e) { if (e.name !== 'AbortError') $('phone-save-help').textContent = $('phone-save-video').hidden ? 'Press and hold the picture, then tap "Save to Photos."' : 'Tap "Download it instead," then use the share button to save the video.'; }
   });
+  let computerExtras = [];
+  $('phone-save-download').addEventListener('click', () => {
+    computerExtras.forEach(f => downloadBlob(f, f.name));
+    say('card-status', 'Your card was downloaded. Look in your Downloads folder.');
+  });
   $('phone-save-done').addEventListener('click', () => { $('phone-save-video').pause(); phoneSave.close(); });
   $('download-card').addEventListener('click', async () => {
     const button = $('download-card'); button.disabled = true; say('card-status', 'Getting your card ready…');
     try {
       const blob = await cardPicture();
-      if (isPhone()) { showPhoneSave(blob); say('card-status', 'Your card is ready to save to your phone.'); return; }
-      downloadBlob(blob, `${fileName()}.png`);
-      say('card-status', draft.sound ? 'Your card was downloaded. Tap "Save My Sound" to keep your sound too.' : 'Your card was downloaded. Look in your Downloads folder.');
+      showPhoneSave(blob); say('card-status', isPhone() ? 'Your card is ready to save to your phone.' : 'Your card is ready. Click "Download My Card."');
     } catch { say('card-status', 'The download did not work. Please try again.'); }
     finally { button.disabled = false; }
   });
@@ -757,8 +767,7 @@
       rec.stop(); await done;
       const blob = new Blob(chunks, {type: type.split(';')[0]});
       if (!blob.size) throw Error('empty');
-      if (isPhone()) { showPhoneSave(blob, true); say('card-status', 'Your video card is ready.'); }
-      else { downloadBlob(blob, `${fileName('-video')}.${type.includes('mp4') ? 'mp4' : 'webm'}`); say('card-status', 'Your video card was downloaded. Look in your Downloads folder.'); }
+      showPhoneSave(blob, true); say('card-status', 'Your video card is ready.');
     } catch (e) {
       failed = true;
     } finally {
@@ -776,11 +785,7 @@
         const music = soundFile(); if (music) extras.push(music);
         if (mamaReady()) extras.push(new File([voiceCache.blob], `${fileName('-mama-voice')}.mp3`, {type: voiceCache.blob.type || 'audio/mpeg'}));
       }
-      if (isPhone()) { showPhoneSave(blob, false, extras, videoFailed); say('card-status', ''); }
-      else {
-        downloadBlob(blob, `${fileName()}.png`); extras.forEach(f => downloadBlob(f, f.name));
-        say('card-status', videoFailed ? 'Your card and its sound were downloaded as separate files. Look in your Downloads folder.' : 'Your card was downloaded. Look in your Downloads folder.');
-      }
+      showPhoneSave(blob, false, extras, videoFailed); say('card-status', isPhone() ? '' : 'Your card is ready. Click "Download My Card."');
     } catch { say('card-status', 'Something went wrong making your card. Please tap Send My Card again.'); }
     finally { button.disabled = false; }
   }
