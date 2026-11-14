@@ -116,8 +116,8 @@ button:disabled{opacity:.55;cursor:default}
 .card-ornament{display:flex;align-items:center;gap:1.4cqi;margin:1.4cqi 0 1.6cqi 4cqi;color:var(--gold-soft);width:46%}
 .card.full-style .card-ornament{margin-left:auto;margin-right:auto}
 .card-ornament span{flex:1;height:1px;background:currentColor;opacity:.8}.card-ornament i{font-style:normal;font-size:3.2cqi;line-height:1}
-.card-message{margin:0;font:500 3.5cqi/1.42 var(--serif);white-space:pre-wrap;overflow-wrap:anywhere;color:inherit}
-.card.size-large .card-message{font-size:4.4cqi}
+.card-message{margin:0;font:500 4.6cqi/1.38 var(--serif);white-space:pre-wrap;overflow-wrap:anywhere;color:inherit}
+.card.size-large .card-message{font-size:5.8cqi}
 .card.ink-light{color:#fffcf5}.card.ink-light .card-top{color:#fffcf5}.card.ink-light .card-script{color:#f1d9a6;text-shadow:0 2px 6px #00000059}
 .card-mama{position:absolute;right:4cqi;bottom:4cqi;width:17cqi;height:17cqi;border-radius:50%;object-fit:cover;border:.6cqi solid #f3e3c4;box-shadow:0 1cqi 3cqi #072f4359}
 .card-signature{position:absolute;left:7cqi;bottom:3.4cqi;font:400 4.2cqi/1 var(--script);color:var(--gold-ink);opacity:.9}
@@ -228,12 +228,12 @@ body.zoomed .card-stage{width:min(94vw,calc((100vh - 170px) * 8 / 7));max-width:
 /* Photo cards: the picture is the star. Small words are written right on it, along the bottom by default,
    with only a soft shadow so they can be read. No box, no fading. */
 .card.has-picture:not(.art-card) .card-scrim{display:none}
-.card.has-picture:not(.art-card) .card-words{inset:auto auto 5cqi 6cqi;width:44%;max-height:60cqi;justify-content:flex-end}
-.card.has-picture:not(.art-card) .card-top{margin:0;font-size:3.6cqi}
-.card.has-picture:not(.art-card) .card-script{font-size:calc(6.6cqi * var(--ss,1));padding-left:2.4cqi}
+.card.has-picture:not(.art-card) .card-words{inset:auto auto 5cqi 5cqi;width:54%;max-height:66cqi;justify-content:flex-end}
+.card.has-picture:not(.art-card) .card-top{margin:0;font-size:4.6cqi}
+.card.has-picture:not(.art-card) .card-script{font-size:calc(8.4cqi * var(--ss,1));padding-left:2.4cqi}
 .card.has-picture:not(.art-card) .card-ornament{margin:.8cqi 0 1cqi 2.4cqi;width:38%}
-.card.has-picture:not(.art-card) .card-message{font-size:3cqi;line-height:1.38}
-.card.has-picture.size-large:not(.art-card) .card-message{font-size:3.6cqi}
+.card.has-picture:not(.art-card) .card-message{font-size:4.2cqi;line-height:1.34}
+.card.has-picture.size-large:not(.art-card) .card-message{font-size:5.4cqi}
 .card.has-picture.place-right:not(.art-card) .card-words{left:auto;right:6cqi}
 .card.has-picture.place-bottom:not(.art-card) .card-words{left:8cqi;right:8cqi;width:auto;max-height:40cqi;align-items:center;text-align:center}
 .card.has-picture.place-bottom:not(.art-card) .card-script{padding-left:0}
@@ -307,7 +307,8 @@ body.zoomed .card-stage{width:min(94vw,calc((100vh - 170px) * 8 / 7));max-width:
 .card.font-modern .card-script{font-family:var(--body);font-weight:700;--ss:.6}
 .card.font-modern .card-message,.card.font-modern .card-top{font-family:var(--body)}
 /* Small words */
-.card.size-small .card-message{font-size:2.9cqi}
+.card.size-small .card-message{font-size:3.6cqi}
+.card.has-picture.size-small:not(.art-card) .card-message{font-size:3.4cqi}
 .card.has-picture.size-small:not(.art-card) .card-message{font-size:2.5cqi}
 /* Word colors chosen by the customer */
 .card.wc .card-words,.card.wc .card-top,.card.wc .card-script,.card.wc .card-message,.card.wc .card-ornament{color:var(--wc)!important}
