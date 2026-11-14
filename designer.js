@@ -908,13 +908,14 @@
       return {ok: draft.imageName === picture.name, result: draft.imageName === picture.name ? `The ${picture.name} picture is now on the card.` : 'That picture could not load. Ask the customer to try another.'};
     },
     setMessage(message, title) {
-      const words = String(message || '').trim().slice(0, 500);
-      if (!words) return {ok: false, result: 'The message was empty. Ask the customer what they want the card to say.'};
+      const words = String(message || '').trim().slice(0, 500), heading = String(title || '').trim().slice(0, 80);
+      if (!words && !heading) return {ok: false, result: 'Nothing to write. Ask the customer what they want the card to say.'};
       showStep(2);
-      draft.message = words; $('card-message').value = words;
-      if (title && String(title).trim()) { draft.title = String(title).trim().slice(0, 80); $('card-title').value = draft.title; }
-      save(); say('card-status', 'Mama wrote your message on the card.');
-      return {ok: true, result: `The card now says: "${words}"`};
+      if (heading) { draft.title = heading; $('card-title').value = heading; }
+      // A title-only request keeps the message already on the card.
+      if (words && !(heading && words === draft.message)) { draft.message = words; $('card-message').value = words; }
+      save(); say('card-status', words ? 'Mama wrote your message on the card.' : 'Mama put your title on the card.');
+      return {ok: true, result: `The card's title is "${draft.title || '(none)'}" and its message is "${draft.message || '(none yet)'}".`};
     },
     goToStep(name) {
       const n = stepNames.findIndex(s => plain(s) === plain(name)) + 1;
